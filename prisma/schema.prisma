@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String
+  password     String
+  applications Application[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Application {
+  id          String      @id @default(cuid())
+  name        String
+  type        AppType
+  description String?     @db.Text
+  apiKey      String      @unique
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bugs        BugReport[]
+  feedback    Feedback[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+model BugReport {
+  id            String      @id @default(cuid())
+  title         String
+  description   String      @db.Text
+  status        BugStatus   @default(OPEN)
+  priority      Priority    @default(MEDIUM)
+  appVersion    String?
+  deviceInfo    String?
+  stackTrace    String?     @db.Text
+  reporterEmail String?
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([applicationId])
+  @@index([status])
+  @@index([priority])
+}
+
+model Feedback {
+  id            String         @id @default(cuid())
+  title         String
+  message       String         @db.Text
+  type          FeedbackType   @default(GENERAL)
+  status        FeedbackStatus @default(NEW)
+  rating        Int?
+  reporterEmail String?
+  appVersion    String?
+  applicationId String
+  application   Application    @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([applicationId])
+  @@index([status])
+  @@index([type])
+}
+
+enum FeedbackType {
+  GENERAL
+  SUGGESTION
+  COMPLAINT
+  COMPLIMENT
+}
+
+enum FeedbackStatus {
+  NEW
+  READ
+  ARCHIVED
+}
+
+enum AppType {
+  WEBSITE
+  ANDROID
+  IOS
+  DESKTOP
+}
+
+enum BugStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
