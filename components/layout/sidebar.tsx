@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, AppWindow, List, LogOut,
-  MessageSquare, UserPlus, Users,
+  MessageSquare, UserPlus, Users, Settings2,
 } from 'lucide-react'
 import { LogoIcon } from '@/components/logo'
 import { logoutAction } from '@/app/actions/auth'
@@ -18,6 +18,7 @@ const nav = [
   { href: '/dashboard/bugs',         label: 'All Bugs',     icon: List },
   { href: '/dashboard/feedback',     label: 'Feedback',     icon: MessageSquare },
   { href: '/dashboard/members',      label: 'Members',      icon: Users },
+  { href: '/dashboard/settings',     label: 'Settings',     icon: Settings2 },
 ]
 
 interface SidebarProps {
