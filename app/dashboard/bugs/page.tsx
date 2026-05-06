@@ -9,6 +9,13 @@ import type { BugStatus, Priority } from '@prisma/client'
 const STATUS_OPTIONS: BugStatus[] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']
 const PRIORITY_OPTIONS: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
 
+const accessible = (userId: string) => ({
+  OR: [
+    { userId },
+    { members: { some: { userId } } },
+  ],
+})
+
 export default async function BugsPage({
   searchParams,
 }: {
@@ -23,10 +30,12 @@ export default async function BugsPage({
   const [bugs, apps] = await Promise.all([
     prisma.bugReport.findMany({
       where: {
-        application: { userId },
+        application: {
+          ...accessible(userId),
+          ...(sp.appId && { id: sp.appId }),
+        },
         ...(status && { status }),
         ...(priority && { priority }),
-        ...(sp.appId && { applicationId: sp.appId }),
         ...(sp.q && {
           OR: [
             { title: { contains: sp.q } },
@@ -39,7 +48,7 @@ export default async function BugsPage({
       include: { application: { select: { id: true, name: true } } },
     }),
     prisma.application.findMany({
-      where: { userId },
+      where: accessible(userId),
       select: { id: true, name: true },
     }),
   ])
@@ -87,12 +96,8 @@ export default async function BugsPage({
                       {bug.application.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-3.5">
-                    <PriorityBadge priority={bug.priority} />
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <StatusBadge status={bug.status} />
-                  </td>
+                  <td className="px-5 py-3.5"><PriorityBadge priority={bug.priority} /></td>
+                  <td className="px-5 py-3.5"><StatusBadge status={bug.status} /></td>
                   <td className="px-5 py-3.5 text-xs text-zinc-500">{relativeTime(bug.createdAt)}</td>
                 </tr>
               ))}

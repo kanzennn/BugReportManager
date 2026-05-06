@@ -47,7 +47,7 @@ export function FeedbackFilters({ apps }: { apps: App[] }) {
       </form>
 
       {/* Status tabs */}
-      <div className="flex gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 p-1">
+      <div className="flex gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 p-1 text-center">
         <Link
           href={buildUrl({ status: undefined })}
           className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${!currentStatus ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'}`}

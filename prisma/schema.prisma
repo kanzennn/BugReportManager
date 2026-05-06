@@ -7,29 +7,82 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  name         String
-  password     String
-  applications Application[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id              String              @id @default(cuid())
+  email           String              @unique
+  name            String
+  password        String?
+  avatarUrl       String?
+  lastSeenAt      DateTime?
+  applications    Application[]
+  oauthAccounts   OAuthAccount[]
+  memberships     ApplicationMember[]
+  sentInvitations Invitation[]        @relation("InvitedBy")
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+}
+
+model OAuthAccount {
+  id         String   @id @default(cuid())
+  provider   String
+  providerId String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([provider, providerId])
+  @@index([userId])
 }
 
 model Application {
-  id          String      @id @default(cuid())
+  id          String              @id @default(cuid())
   name        String
   type        AppType
-  description String?     @db.Text
-  apiKey      String      @unique
+  description String?             @db.Text
+  apiKey      String              @unique
   userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   bugs        BugReport[]
   feedback    Feedback[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  members     ApplicationMember[]
+  invitations Invitation[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
   @@index([userId])
+}
+
+model ApplicationMember {
+  id            String      @id @default(cuid())
+  userId        String
+  applicationId String
+  role          MemberRole
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([userId, applicationId])
+  @@index([applicationId])
+  @@index([userId])
+}
+
+model Invitation {
+  id            String           @id @default(cuid())
+  email         String
+  role          MemberRole       @default(VIEWER)
+  token         String           @unique
+  status        InvitationStatus @default(PENDING)
+  expiresAt     DateTime
+  applicationId String
+  application   Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  invitedById   String
+  invitedBy     User             @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([applicationId])
+  @@index([token])
+  @@index([email])
 }
 
 model BugReport {
@@ -69,6 +122,19 @@ model Feedback {
   @@index([applicationId])
   @@index([status])
   @@index([type])
+}
+
+enum MemberRole {
+  VIEWER
+  EDITOR
+  ADMIN
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
 }
 
 enum FeedbackType {

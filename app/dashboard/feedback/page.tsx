@@ -9,6 +9,13 @@ import type { FeedbackType, FeedbackStatus } from '@prisma/client'
 const TYPE_OPTIONS: FeedbackType[] = ['GENERAL', 'SUGGESTION', 'COMPLAINT', 'COMPLIMENT']
 const STATUS_OPTIONS: FeedbackStatus[] = ['NEW', 'READ', 'ARCHIVED']
 
+const accessible = (userId: string) => ({
+  OR: [
+    { userId },
+    { members: { some: { userId } } },
+  ],
+})
+
 export default async function FeedbackPage({
   searchParams,
 }: {
@@ -23,10 +30,12 @@ export default async function FeedbackPage({
   const [items, apps] = await Promise.all([
     prisma.feedback.findMany({
       where: {
-        application: { userId },
+        application: {
+          ...accessible(userId),
+          ...(sp.appId && { id: sp.appId }),
+        },
         ...(type && { type }),
         ...(status && { status }),
-        ...(sp.appId && { applicationId: sp.appId }),
         ...(sp.q && {
           OR: [
             { title: { contains: sp.q } },
@@ -39,7 +48,7 @@ export default async function FeedbackPage({
       include: { application: { select: { id: true, name: true } } },
     }),
     prisma.application.findMany({
-      where: { userId },
+      where: accessible(userId),
       select: { id: true, name: true },
     }),
   ])
@@ -90,12 +99,8 @@ export default async function FeedbackPage({
                       {item.application.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-3.5">
-                    <FeedbackTypeBadge type={item.type} />
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <FeedbackStatusBadge status={item.status} />
-                  </td>
+                  <td className="px-5 py-3.5"><FeedbackTypeBadge type={item.type} /></td>
+                  <td className="px-5 py-3.5"><FeedbackStatusBadge status={item.status} /></td>
                   <td className="px-5 py-3.5 text-xs text-zinc-500">{relativeTime(item.createdAt)}</td>
                 </tr>
               ))}

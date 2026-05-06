@@ -9,30 +9,42 @@ import { z } from 'zod'
 const loginSchema = z.object({
   email: z.string().email('Invalid email'),
   password: z.string().min(1, 'Password is required'),
+  redirectTo: z.string().optional(),
 })
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  redirectTo: z.string().optional(),
 })
 
 type ActionState = { error: string } | null
+
+function safeRedirect(url: string | undefined): string {
+  if (!url || !url.startsWith('/')) return '/dashboard'
+  return url
+}
 
 export async function loginAction(_: ActionState, formData: FormData): Promise<ActionState> {
   const parsed = loginSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
+    redirectTo: formData.get('redirectTo'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
   const user = await prisma.user.findUnique({ where: { email: parsed.data.email } })
-  if (!user || !(await bcrypt.compare(parsed.data.password, user.password))) {
+  if (!user) return { error: 'Invalid email or password' }
+  if (!user.password) {
+    return { error: 'This account uses social login. Please sign in with Google or GitHub.' }
+  }
+  if (!(await bcrypt.compare(parsed.data.password, user.password))) {
     return { error: 'Invalid email or password' }
   }
 
   await createSession(user.id)
-  redirect('/dashboard')
+  redirect(safeRedirect(parsed.data.redirectTo))
 }
 
 export async function registerAction(_: ActionState, formData: FormData): Promise<ActionState> {
@@ -40,6 +52,7 @@ export async function registerAction(_: ActionState, formData: FormData): Promis
     name: formData.get('name'),
     email: formData.get('email'),
     password: formData.get('password'),
+    redirectTo: formData.get('redirectTo'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
@@ -52,7 +65,7 @@ export async function registerAction(_: ActionState, formData: FormData): Promis
   })
 
   await createSession(user.id)
-  redirect('/dashboard')
+  redirect(safeRedirect(parsed.data.redirectTo))
 }
 
 export async function logoutAction() {
