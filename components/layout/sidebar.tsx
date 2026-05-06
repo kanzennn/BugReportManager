@@ -4,9 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Bug, LayoutDashboard, AppWindow, List, LogOut,
-  MessageSquare, UserCircle, UserPlus, Users,
+  LayoutDashboard, AppWindow, List, LogOut,
+  MessageSquare, UserPlus, Users,
 } from 'lucide-react'
+import { LogoIcon } from '@/components/logo'
 import { logoutAction } from '@/app/actions/auth'
 import { cn } from '@/lib/utils'
 import { InviteModal } from './invite-modal'
@@ -34,9 +35,7 @@ export function Sidebar({ userName, avatarUrl, ownedApps }: SidebarProps) {
       <aside className="fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-zinc-800 bg-zinc-950">
         {/* Logo */}
         <div className="flex h-16 items-center gap-3 border-b border-zinc-800 px-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-            <Bug className="h-4 w-4 text-white" />
-          </div>
+          <LogoIcon size={32} />
           <span className="text-sm font-semibold text-zinc-100">BugReport</span>
         </div>
 
