@@ -18,7 +18,6 @@ const nav = [
   { href: '/dashboard/bugs',         label: 'All Bugs',     icon: List },
   { href: '/dashboard/feedback',     label: 'Feedback',     icon: MessageSquare },
   { href: '/dashboard/members',      label: 'Members',      icon: Users },
-  { href: '/dashboard/settings',     label: 'Settings',     icon: Settings2 },
 ]
 
 interface SidebarProps {
@@ -76,8 +75,20 @@ export function Sidebar({ userName, avatarUrl, ownedApps }: SidebarProps) {
           </div>
         )}
 
-        {/* User */}
+        {/* Settings + User */}
         <div className={cn('p-3 space-y-1', ownedApps.length === 0 ? 'border-t border-zinc-800' : '')}>
+          <Link
+            href="/dashboard/settings"
+            className={cn(
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              pathname.startsWith('/dashboard/settings')
+                ? 'bg-indigo-600/20 text-indigo-400'
+                : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100'
+            )}
+          >
+            <Settings2 className="h-4 w-4" />
+            Settings
+          </Link>
           <Link
             href="/dashboard/profile"
             className={cn(
