@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { inviteUserGeneralAction } from '@/app/actions/invitations'
 import { X, UserPlus, Send } from 'lucide-react'
 
@@ -28,13 +29,13 @@ export function InviteModal({ apps, onClose }: Props) {
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
 
-  // Auto-close after success
   useEffect(() => {
     if (!state?.success) return
+    toast.success(state.success)
     formRef.current?.reset()
-    const t = setTimeout(onClose, 1500)
-    return () => clearTimeout(t)
-  }, [state?.success, onClose])
+    onClose()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.success])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -139,11 +140,6 @@ export function InviteModal({ apps, onClose }: Props) {
           {state?.error && (
             <p className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-400">
               {state.error}
-            </p>
-          )}
-          {state?.success && (
-            <p className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-400">
-              {state.success}
             </p>
           )}
 

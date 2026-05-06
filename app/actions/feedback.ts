@@ -39,5 +39,5 @@ export async function deleteFeedbackAction(feedbackId: string, redirectTo = '/da
 
   await prisma.feedback.delete({ where: { id: feedbackId } })
   revalidatePath('/dashboard/feedback')
-  redirect(redirectTo)
+  redirect(redirectTo.includes('?') ? `${redirectTo}&flash=feedback-deleted` : `${redirectTo}?flash=feedback-deleted`)
 }

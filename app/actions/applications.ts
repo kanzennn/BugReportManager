@@ -32,7 +32,7 @@ export async function createApplicationAction(
     data: { ...parsed.data, userId: session.userId, apiKey: generateApiKey() },
   })
 
-  redirect(`/dashboard/applications/${app.id}`)
+  redirect(`/dashboard/applications/${app.id}?flash=app-created`)
 }
 
 export async function updateApplicationAction(
@@ -53,14 +53,14 @@ export async function updateApplicationAction(
 
   await prisma.application.update({ where: { id }, data: parsed.data })
   revalidatePath(`/dashboard/applications/${id}`)
-  redirect(`/dashboard/applications/${id}`)
+  redirect(`/dashboard/applications/${id}?flash=app-updated`)
 }
 
 export async function deleteApplicationAction(id: string) {
   const session = await requireAuth()
   await prisma.application.deleteMany({ where: { id, userId: session.userId } })
   revalidatePath('/dashboard/applications')
-  redirect('/dashboard/applications')
+  redirect('/dashboard/applications?flash=app-deleted')
 }
 
 export async function regenerateApiKeyAction(id: string) {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { updateFeedbackStatusAction } from '@/app/actions/feedback'
 import type { FeedbackStatus } from '@prisma/client'
 
@@ -27,7 +28,14 @@ export function FeedbackStatusUpdate({
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const status = e.target.value as FeedbackStatus
-    startTransition(() => updateFeedbackStatusAction(feedbackId, status))
+    startTransition(async () => {
+      try {
+        await updateFeedbackStatusAction(feedbackId, status)
+        toast.success('Status updated')
+      } catch {
+        toast.error('Failed to update status')
+      }
+    })
   }
 
   return (

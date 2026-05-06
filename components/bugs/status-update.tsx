@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { updateBugStatusAction } from '@/app/actions/bugs'
 import type { BugStatus } from '@prisma/client'
 
@@ -23,7 +24,14 @@ export function StatusUpdate({ bugId, currentStatus }: { bugId: string; currentS
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const status = e.target.value as BugStatus
-    startTransition(() => updateBugStatusAction(bugId, status))
+    startTransition(async () => {
+      try {
+        await updateBugStatusAction(bugId, status)
+        toast.success('Status updated')
+      } catch {
+        toast.error('Failed to update status')
+      }
+    })
   }
 
   return (

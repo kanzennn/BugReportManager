@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
+import { toast } from 'sonner'
 import { inviteUserAction } from '@/app/actions/invitations'
 import { Send } from 'lucide-react'
 
@@ -15,6 +16,10 @@ const ROLES = [
 export function InviteForm({ appId }: { appId: string }) {
   const boundAction = inviteUserAction.bind(null, appId)
   const [state, action, pending] = useActionState<State, FormData>(boundAction, null)
+
+  useEffect(() => {
+    if (state?.success) toast.success(state.success)
+  }, [state?.success])
 
   return (
     <div className="space-y-3">
@@ -62,9 +67,6 @@ export function InviteForm({ appId }: { appId: string }) {
 
       {state?.error && (
         <p className="text-xs text-red-400">{state.error}</p>
-      )}
-      {state?.success && (
-        <p className="text-xs text-emerald-400">{state.success}</p>
       )}
     </div>
   )

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Copy, Check, RefreshCw } from 'lucide-react'
+import { toast } from 'sonner'
 import { regenerateApiKeyAction } from '@/app/actions/applications'
 
 export function ApiKeyCard({ appId, apiKey }: { appId: string; apiKey: string }) {
@@ -17,8 +18,14 @@ export function ApiKeyCard({ appId, apiKey }: { appId: string; apiKey: string })
   async function handleRegenerate() {
     if (!confirm('Regenerate API key? The old key will stop working immediately.')) return
     setRegenerating(true)
-    await regenerateApiKeyAction(appId)
-    setRegenerating(false)
+    try {
+      await regenerateApiKeyAction(appId)
+      toast.success('API key regenerated')
+    } catch {
+      toast.error('Failed to regenerate API key')
+    } finally {
+      setRegenerating(false)
+    }
   }
 
   return (

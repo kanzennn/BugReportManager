@@ -39,5 +39,5 @@ export async function deleteBugAction(bugId: string, redirectTo = '/dashboard/bu
 
   await prisma.bugReport.delete({ where: { id: bugId } })
   revalidatePath('/dashboard/bugs')
-  redirect(redirectTo)
+  redirect(redirectTo.includes('?') ? `${redirectTo}&flash=bug-deleted` : `${redirectTo}?flash=bug-deleted`)
 }

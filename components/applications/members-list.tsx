@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { removeMemberAction, updateMemberRoleAction, revokeInvitationAction } from '@/app/actions/invitations'
 import { Crown, X, Clock } from 'lucide-react'
 import type { MemberRole } from '@prisma/client'
@@ -62,11 +63,17 @@ function MemberRow({ member, appId, isOwner }: { member: Member; appId: string; 
           <select
             value={member.role}
             disabled={pending}
-            onChange={(e) =>
-              startTransition(() =>
-                updateMemberRoleAction(appId, member.userId, e.target.value as MemberRole)
-              )
-            }
+            onChange={(e) => {
+              const role = e.target.value as MemberRole
+              startTransition(async () => {
+                try {
+                  await updateMemberRoleAction(appId, member.userId, role)
+                  toast.success('Role updated')
+                } catch {
+                  toast.error('Failed to update role')
+                }
+              })
+            }}
             className="rounded-lg border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-300 focus:border-indigo-500 focus:outline-none disabled:opacity-50"
           >
             {ROLE_OPTIONS.map((r) => (
@@ -78,7 +85,14 @@ function MemberRow({ member, appId, isOwner }: { member: Member; appId: string; 
         )}
         {isOwner && (
           <button
-            onClick={() => startTransition(() => removeMemberAction(appId, member.userId))}
+            onClick={() => startTransition(async () => {
+              try {
+                await removeMemberAction(appId, member.userId)
+                toast.success('Member removed')
+              } catch {
+                toast.error('Failed to remove member')
+              }
+            })}
             disabled={pending}
             className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-red-400 disabled:opacity-50"
             title="Remove member"
@@ -106,7 +120,14 @@ function InvitationRow({ inv, appId }: { inv: PendingInvitation; appId: string }
       <div className="flex shrink-0 items-center gap-2">
         <RoleBadge role={inv.role} />
         <button
-          onClick={() => startTransition(() => revokeInvitationAction(inv.id, appId))}
+          onClick={() => startTransition(async () => {
+            try {
+              await revokeInvitationAction(inv.id, appId)
+              toast.success('Invitation revoked')
+            } catch {
+              toast.error('Failed to revoke invitation')
+            }
+          })}
           disabled={pending}
           className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-red-400 disabled:opacity-50"
           title="Revoke invitation"

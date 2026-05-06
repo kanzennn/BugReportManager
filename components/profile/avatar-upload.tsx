@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useEffect, useRef, useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { uploadAvatarAction, removeAvatarAction } from '@/app/actions/profile'
 import { Camera, Upload, Trash2 } from 'lucide-react'
 
@@ -22,9 +23,9 @@ export function AvatarUpload({
   const MAX_BYTES = 5 * 1024 * 1024
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
-  // Clear preview after successful upload
   useEffect(() => {
     if (state?.success) {
+      toast.success(state.success)
       setPreview(null)
       if (inputRef.current) inputRef.current.value = ''
     }
@@ -117,7 +118,14 @@ export function AvatarUpload({
                   <button
                     type="button"
                     disabled={removePending}
-                    onClick={() => startRemove(() => removeAvatarAction())}
+                    onClick={() => startRemove(async () => {
+                      try {
+                        await removeAvatarAction()
+                        toast.success('Profile picture removed')
+                      } catch {
+                        toast.error('Failed to remove profile picture')
+                      }
+                    })}
                     className="flex items-center gap-2 rounded-lg border border-zinc-700 px-3 py-1.5 text-sm font-medium text-zinc-500 transition-colors hover:border-red-800/50 hover:text-red-400 disabled:opacity-50"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -147,9 +155,6 @@ export function AvatarUpload({
 
           {(clientError ?? state?.error) && (
             <p className="text-xs text-red-400">{clientError ?? state?.error}</p>
-          )}
-          {!clientError && state?.success && (
-            <p className="text-xs text-emerald-400">{state.success}</p>
           )}
         </form>
 

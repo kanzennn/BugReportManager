@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
+import { toast } from 'sonner'
 import { updateProfileAction } from '@/app/actions/profile'
 
 type State = { error?: string; success?: string } | null
@@ -8,13 +9,14 @@ type State = { error?: string; success?: string } | null
 export function EditProfileForm({ currentName }: { currentName: string }) {
   const [state, action, pending] = useActionState<State, FormData>(updateProfileAction, null)
 
+  useEffect(() => {
+    if (state?.success) toast.success(state.success)
+  }, [state?.success])
+
   return (
     <form action={action} className="space-y-4">
       {state?.error && (
         <p className="text-sm text-red-400">{state.error}</p>
-      )}
-      {state?.success && (
-        <p className="text-sm text-emerald-400">{state.success}</p>
       )}
       <div>
         <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-zinc-300">

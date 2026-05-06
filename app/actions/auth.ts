@@ -44,7 +44,8 @@ export async function loginAction(_: ActionState, formData: FormData): Promise<A
   }
 
   await createSession(user.id)
-  redirect(safeRedirect(parsed.data.redirectTo))
+  const dest = safeRedirect(parsed.data.redirectTo)
+  redirect(dest.includes('?') ? `${dest}&flash=logged-in` : `${dest}?flash=logged-in`)
 }
 
 export async function registerAction(_: ActionState, formData: FormData): Promise<ActionState> {
@@ -65,10 +66,11 @@ export async function registerAction(_: ActionState, formData: FormData): Promis
   })
 
   await createSession(user.id)
-  redirect(safeRedirect(parsed.data.redirectTo))
+  const regDest = safeRedirect(parsed.data.redirectTo)
+  redirect(regDest.includes('?') ? `${regDest}&flash=registered` : `${regDest}?flash=registered`)
 }
 
 export async function logoutAction() {
   await deleteSession()
-  redirect('/login')
+  redirect('/login?flash=logged-out')
 }
