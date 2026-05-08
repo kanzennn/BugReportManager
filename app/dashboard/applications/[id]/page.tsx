@@ -105,6 +105,7 @@ export default async function ApplicationDetailPage({
                 Edit
               </Link>
               <ConfirmButton
+                  title="Are you sure?"
                 action={deleteApplicationAction.bind(null, app.id)}
                 message="Delete this application and all its bug reports?"
                 className="flex items-center gap-2 rounded-lg border border-red-800/50 px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:border-red-600 hover:bg-red-500/10"

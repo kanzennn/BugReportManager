@@ -47,6 +47,7 @@ export default async function BugDetailPage({
             </div>
           </div>
           <ConfirmButton
+              title="Are you sure?"
             action={deleteBugAction.bind(null, bug.id, '/dashboard/bugs')}
             message="Delete this bug report?"
             className="flex shrink-0 items-center gap-2 rounded-lg border border-red-800/50 px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:border-red-600 hover:bg-red-500/10"

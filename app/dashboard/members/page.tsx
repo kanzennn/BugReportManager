@@ -242,6 +242,7 @@ export default async function MembersPage() {
                         </td>
                         <td className="px-5 py-3 text-right">
                           <ConfirmButton
+                              title="Are you Sure?"
                             action={revokeInvitationAction.bind(null, inv.id, app.id)}
                             message={`Revoke invitation to ${inv.email}?`}
                             className="rounded-md px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-red-400"

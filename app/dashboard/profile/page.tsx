@@ -147,6 +147,7 @@ export default async function ProfilePage() {
           Permanently delete your account and all associated data — applications, bug reports, feedback, and members. This cannot be undone.
         </p>
         <ConfirmButton
+            title="Are you sure?"
           action={deleteAccountAction}
           message="Delete your account and all data? This cannot be undone."
           className="flex items-center gap-2 rounded-lg border border-red-800/50 px-4 py-2 text-sm font-medium text-red-400 transition-colors hover:border-red-600 hover:bg-red-500/10"
