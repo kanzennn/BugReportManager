@@ -7,18 +7,24 @@ datasource db {
 }
 
 model User {
-  id              String              @id @default(cuid())
-  email           String              @unique
-  name            String
-  password        String?
-  avatarUrl       String?
-  lastSeenAt      DateTime?
-  applications    Application[]
-  oauthAccounts   OAuthAccount[]
-  memberships     ApplicationMember[]
-  sentInvitations Invitation[]        @relation("InvitedBy")
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id                     String              @id @default(cuid())
+  email                  String              @unique
+  name                   String
+  password               String?
+  avatarUrl              String?
+  lastSeenAt             DateTime?
+  plan                   Plan                @default(FREE)
+  stripeCustomerId       String?             @unique
+  stripeSubscriptionId   String?             @unique
+  subscriptionStatus     SubscriptionStatus  @default(INACTIVE)
+  isAdmin                Boolean             @default(false)
+  applications           Application[]
+  oauthAccounts          OAuthAccount[]
+  memberships            ApplicationMember[]
+  sentInvitations        Invitation[]        @relation("InvitedBy")
+  transactions           Transaction[]
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
 }
 
 model OAuthAccount {
@@ -169,4 +175,47 @@ enum Priority {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+enum Plan {
+  FREE
+  PRO
+  BUSINESS
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  TRIALING
+  INACTIVE
+}
+
+model Transaction {
+  id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount           Int
+  currency         String            @default("usd")
+  status           TransactionStatus @default(SUCCEEDED)
+  stripePaymentId  String?           @unique
+  plan             Plan
+  createdAt        DateTime          @default(now())
+
+  @@index([userId])
+}
+
+enum TransactionStatus {
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+model PlanConfig {
+  id            String   @id
+  plan          Plan     @unique
+  displayPrice  Int
+  stripePriceId String   @default("")
+  features      Json
+  updatedAt     DateTime @updatedAt
 }

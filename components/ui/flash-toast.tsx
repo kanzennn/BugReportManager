@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -19,19 +19,16 @@ export function FlashToast() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
-  const didRun = useRef(false)
 
   useEffect(() => {
-    if (didRun.current) return
     const flash = searchParams.get('flash')
     if (!flash || !MESSAGES[flash]) return
-    didRun.current = true
     toast.success(MESSAGES[flash])
     const params = new URLSearchParams(searchParams.toString())
     params.delete('flash')
     const query = params.toString()
     router.replace(pathname + (query ? `?${query}` : ''), { scroll: false })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchParams]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return null
 }

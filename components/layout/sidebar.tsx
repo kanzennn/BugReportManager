@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, AppWindow, List, LogOut,
-  MessageSquare, UserPlus, Users, Settings2,
+  MessageSquare, UserPlus, Users, Settings2, CreditCard, ShieldCheck,
 } from 'lucide-react'
 import { LogoIcon } from '@/components/logo'
 import { logoutAction } from '@/app/actions/auth'
@@ -18,15 +18,17 @@ const nav = [
   { href: '/dashboard/bugs',         label: 'All Bugs',     icon: List },
   { href: '/dashboard/feedback',     label: 'Feedback',     icon: MessageSquare },
   { href: '/dashboard/members',      label: 'Members',      icon: Users },
+  { href: '/dashboard/billing',      label: 'Billing',      icon: CreditCard },
 ]
 
 interface SidebarProps {
   userName: string
   avatarUrl?: string | null
   ownedApps: { id: string; name: string }[]
+  isAdmin?: boolean
 }
 
-export function Sidebar({ userName, avatarUrl, ownedApps }: SidebarProps) {
+export function Sidebar({ userName, avatarUrl, ownedApps, isAdmin }: SidebarProps) {
   const pathname = usePathname()
   const [inviteOpen, setInviteOpen] = useState(false)
 
@@ -75,8 +77,26 @@ export function Sidebar({ userName, avatarUrl, ownedApps }: SidebarProps) {
           </div>
         )}
 
+        {/* Admin link */}
+        {isAdmin && (
+          <div className="border-t border-zinc-800 p-3">
+            <Link
+              href="/admin"
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                pathname.startsWith('/admin')
+                  ? 'bg-amber-600/20 text-amber-400'
+                  : 'text-amber-500/70 hover:bg-amber-600/10 hover:text-amber-400'
+              )}
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Admin panel
+            </Link>
+          </div>
+        )}
+
         {/* Settings + User */}
-        <div className={cn('p-3 space-y-1', ownedApps.length === 0 ? 'border-t border-zinc-800' : '')}>
+        <div className={cn('p-3 space-y-1', ownedApps.length === 0 && !isAdmin ? 'border-t border-zinc-800' : '')}>
           <Link
             href="/dashboard/settings"
             className={cn(

@@ -28,6 +28,15 @@ export async function createApplicationAction(
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { plan: true, _count: { select: { applications: true } } },
+  })
+
+  if (user?.plan === 'FREE' && (user._count.applications ?? 0) >= 3) {
+    return { error: 'Free plan is limited to 3 applications. Upgrade to Pro or Business to create more.' }
+  }
+
   const app = await prisma.application.create({
     data: { ...parsed.data, userId: session.userId, apiKey: generateApiKey() },
   })
