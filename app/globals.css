@@ -52,3 +52,10 @@ body {
 ::-webkit-scrollbar-track { background: var(--color-zinc-800); }
 ::-webkit-scrollbar-thumb { background: var(--color-zinc-400); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-zinc-500, oklch(0.552 0.016 285.938)); }
+
+@media print {
+  /* Preserve background colors (chart fills, badge backgrounds, stat card icons) */
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* Remove page margins — content already has its own padding */
+  @page { margin: 1.2cm; }
+}

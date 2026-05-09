@@ -74,40 +74,69 @@ export default async function FeedbackPage({
             {t('feedback.empty')}
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-zinc-800 bg-zinc-800/50">
-                {['feedback.table.feedback', 'feedback.table.application', 'feedback.table.type', 'feedback.table.status', 'feedback.table.received'].map((k) => (
-                  <th key={k} className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">{t(k)}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800">
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-zinc-800 bg-zinc-800/50">
+                    {['feedback.table.feedback', 'feedback.table.application', 'feedback.table.type', 'feedback.table.status', 'feedback.table.received'].map((k) => (
+                      <th key={k} className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">{t(k)}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800">
+                  {items.map((item) => (
+                    <tr key={item.id} className="transition-colors hover:bg-zinc-800/50">
+                      <td className="px-5 py-3.5">
+                        <Link href={`/dashboard/feedback/${item.id}`} className="font-medium text-zinc-100 hover:text-indigo-400">
+                          {item.title}
+                        </Link>
+                        {item.reporterEmail && (
+                          <p className="mt-0.5 text-xs text-zinc-500">{item.reporterEmail}</p>
+                        )}
+                        {item.rating != null && (
+                          <p className="mt-0.5 text-xs text-amber-400">{'★'.repeat(item.rating)}{'☆'.repeat(5 - item.rating)}</p>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <Link href={`/dashboard/applications/${item.application.id}`} className="text-xs text-zinc-400 hover:text-zinc-100">
+                          {item.application.name}
+                        </Link>
+                      </td>
+                      <td className="px-5 py-3.5"><FeedbackTypeBadge type={item.type} /></td>
+                      <td className="px-5 py-3.5"><FeedbackStatusBadge status={item.status} /></td>
+                      <td className="px-5 py-3.5 text-xs text-zinc-500">{relativeTime(item.createdAt, locale)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile card list */}
+            <div className="divide-y divide-zinc-800 md:hidden">
               {items.map((item) => (
-                <tr key={item.id} className="transition-colors hover:bg-zinc-800/50">
-                  <td className="px-5 py-3.5">
-                    <Link href={`/dashboard/feedback/${item.id}`} className="font-medium text-zinc-100 hover:text-indigo-400">
-                      {item.title}
-                    </Link>
-                    {item.reporterEmail && (
-                      <p className="mt-0.5 text-xs text-zinc-500">{item.reporterEmail}</p>
-                    )}
-                    {item.rating != null && (
-                      <p className="mt-0.5 text-xs text-amber-400">{'★'.repeat(item.rating)}{'☆'.repeat(5 - item.rating)}</p>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <Link href={`/dashboard/applications/${item.application.id}`} className="text-xs text-zinc-400 hover:text-zinc-100">
-                      {item.application.name}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5"><FeedbackTypeBadge type={item.type} /></td>
-                  <td className="px-5 py-3.5"><FeedbackStatusBadge status={item.status} /></td>
-                  <td className="px-5 py-3.5 text-xs text-zinc-500">{relativeTime(item.createdAt, locale)}</td>
-                </tr>
+                <Link
+                  key={item.id}
+                  href={`/dashboard/feedback/${item.id}`}
+                  className="flex flex-col gap-2 px-4 py-3.5 transition-colors hover:bg-zinc-800/50"
+                >
+                  <p className="text-sm font-medium text-zinc-100 leading-snug">{item.title}</p>
+                  {item.rating != null && (
+                    <p className="text-xs text-amber-400">{'★'.repeat(item.rating)}{'☆'.repeat(5 - item.rating)}</p>
+                  )}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <FeedbackTypeBadge type={item.type} />
+                    <FeedbackStatusBadge status={item.status} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-zinc-500">{item.application.name}</span>
+                    <span className="text-xs text-zinc-500">{relativeTime(item.createdAt, locale)}</span>
+                  </div>
+                </Link>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
     </div>

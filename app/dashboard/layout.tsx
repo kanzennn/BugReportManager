@@ -37,8 +37,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
           ownedApps={ownedApps}
           isAdmin={user?.isAdmin ?? false}
         />
-        <div className="flex-1 pl-60">
-          <main className="p-8">{children}</main>
+        <div className="flex-1 pl-0 md:pl-60 print:pl-0">
+          <main className="p-4 pt-[72px] md:p-8 md:pt-8">{children}</main>
         </div>
       </div>
     </LanguageProvider>

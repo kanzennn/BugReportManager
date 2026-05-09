@@ -74,37 +74,63 @@ export default async function BugsPage({
             {t('bugs.empty')}
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-zinc-800 bg-zinc-800/50">
-                {['bugs.table.bug', 'bugs.table.application', 'bugs.table.priority', 'bugs.table.status', 'bugs.table.reported'].map((k) => (
-                  <th key={k} className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">{t(k)}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800">
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-zinc-800 bg-zinc-800/50">
+                    {['bugs.table.bug', 'bugs.table.application', 'bugs.table.priority', 'bugs.table.status', 'bugs.table.reported'].map((k) => (
+                      <th key={k} className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">{t(k)}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800">
+                  {bugs.map((bug) => (
+                    <tr key={bug.id} className="transition-colors hover:bg-zinc-800/50">
+                      <td className="px-5 py-3.5">
+                        <Link href={`/dashboard/bugs/${bug.id}`} className="font-medium text-zinc-100 hover:text-indigo-400">
+                          {bug.title}
+                        </Link>
+                        {bug.reporterEmail && (
+                          <p className="mt-0.5 text-xs text-zinc-500">{bug.reporterEmail}</p>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <Link href={`/dashboard/applications/${bug.application.id}`} className="text-xs text-zinc-400 hover:text-zinc-100">
+                          {bug.application.name}
+                        </Link>
+                      </td>
+                      <td className="px-5 py-3.5"><PriorityBadge priority={bug.priority} /></td>
+                      <td className="px-5 py-3.5"><StatusBadge status={bug.status} /></td>
+                      <td className="px-5 py-3.5 text-xs text-zinc-500">{relativeTime(bug.createdAt, locale)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile card list */}
+            <div className="divide-y divide-zinc-800 md:hidden">
               {bugs.map((bug) => (
-                <tr key={bug.id} className="transition-colors hover:bg-zinc-800/50">
-                  <td className="px-5 py-3.5">
-                    <Link href={`/dashboard/bugs/${bug.id}`} className="font-medium text-zinc-100 hover:text-indigo-400">
-                      {bug.title}
-                    </Link>
-                    {bug.reporterEmail && (
-                      <p className="mt-0.5 text-xs text-zinc-500">{bug.reporterEmail}</p>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <Link href={`/dashboard/applications/${bug.application.id}`} className="text-xs text-zinc-400 hover:text-zinc-100">
-                      {bug.application.name}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5"><PriorityBadge priority={bug.priority} /></td>
-                  <td className="px-5 py-3.5"><StatusBadge status={bug.status} /></td>
-                  <td className="px-5 py-3.5 text-xs text-zinc-500">{relativeTime(bug.createdAt, locale)}</td>
-                </tr>
+                <Link
+                  key={bug.id}
+                  href={`/dashboard/bugs/${bug.id}`}
+                  className="flex flex-col gap-2 px-4 py-3.5 transition-colors hover:bg-zinc-800/50"
+                >
+                  <p className="text-sm font-medium text-zinc-100 leading-snug">{bug.title}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <PriorityBadge priority={bug.priority} />
+                    <StatusBadge status={bug.status} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-zinc-500">{bug.application.name}</span>
+                    <span className="text-xs text-zinc-500">{relativeTime(bug.createdAt, locale)}</span>
+                  </div>
+                </Link>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
     </div>

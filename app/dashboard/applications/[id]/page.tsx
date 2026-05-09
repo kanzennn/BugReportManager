@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db'
 import { getAppRole, isOwner as checkOwner, ROLE_LABELS } from '@/lib/access'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Globe, Smartphone, Laptop2, Pencil, Trash2, Users, MessageSquare, Bug } from 'lucide-react'
+import { ArrowLeft, Globe, Smartphone, Laptop2, Pencil, Trash2, Users, MessageSquare, Bug, BarChart2 } from 'lucide-react'
 import { ApiKeyCard } from '@/components/applications/api-key-card'
 import { ApiDocs } from '@/components/applications/api-docs'
 import { MembersList } from '@/components/applications/members-list'
@@ -78,14 +78,14 @@ export default async function ApplicationDetailPage({
           <ArrowLeft className="h-4 w-4" />
           Back to Applications
         </Link>
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-400">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-400">
               <Icon className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-zinc-100">{app.name}</h1>
-              <div className="flex items-center gap-3 mt-1">
+              <h1 className="text-xl font-bold text-zinc-100 sm:text-2xl">{app.name}</h1>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
                 <p className="text-sm text-zinc-400">
                   {typeLabel[app.type]} · {app._count.bugs} bug{app._count.bugs !== 1 ? 's' : ''} · {app._count.feedback} feedback
                 </p>
@@ -95,26 +95,35 @@ export default async function ApplicationDetailPage({
               </div>
             </div>
           </div>
-          {owner && (
-            <div className="flex items-center gap-2">
-              <Link
-                href={`/dashboard/applications/${app.id}/edit`}
-                className="flex items-center gap-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-600 hover:text-zinc-100"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                Edit
-              </Link>
-              <ConfirmButton
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={`/dashboard/applications/${app.id}/analytics`}
+              className="flex items-center gap-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-600 hover:text-zinc-100"
+            >
+              <BarChart2 className="h-3.5 w-3.5" />
+              <span>Analytics</span>
+            </Link>
+            {owner && (
+              <>
+                <Link
+                  href={`/dashboard/applications/${app.id}/edit`}
+                  className="flex items-center gap-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-600 hover:text-zinc-100"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  <span>Edit</span>
+                </Link>
+                <ConfirmButton
                   title="Are you sure?"
-                action={deleteApplicationAction.bind(null, app.id)}
-                message="Delete this application and all its bug reports?"
-                className="flex items-center gap-2 rounded-lg border border-red-800/50 px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:border-red-600 hover:bg-red-500/10"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                Delete
-              </ConfirmButton>
-            </div>
-          )}
+                  action={deleteApplicationAction.bind(null, app.id)}
+                  message="Delete this application and all its bug reports?"
+                  className="flex items-center gap-2 rounded-lg border border-red-800/50 px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:border-red-600 hover:bg-red-500/10"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Delete</span>
+                </ConfirmButton>
+              </>
+            )}
+          </div>
         </div>
         {app.description && <p className="mt-3 text-sm text-zinc-400">{app.description}</p>}
       </div>
