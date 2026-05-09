@@ -1,36 +1,200 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BugReport Manager
+
+A full-stack bug report and feedback management platform built with Next.js 16. Collect bug reports and user feedback from any application through a REST API, manage them in a collaborative dashboard, and export analytics as PDF reports.
+
+## Features
+
+- **Bug & Feedback tracking** — Receive reports via API key, manage status and priority, filter and search
+- **Multi-app support** — Manage multiple applications (Website, Android, iOS, Desktop) under one account
+- **Team collaboration** — Invite members with role-based access (Viewer, Editor, Admin)
+- **Analytics** — Per-app analytics with charts for bug trends, status/priority breakdowns, feedback ratings, and affected versions (Pro & Business)
+- **PDF export** — Export analytics as a formatted A4 PDF document
+- **Billing** — Free / Pro / Business plans via Xendit
+- **OAuth** — Sign in with Google or GitHub
+- **Responsive** — Fully usable on mobile and desktop
+- **Multi-language** — English and Indonesian (ID)
+- **Light / dark mode**
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16.2 (App Router, Turbopack) |
+| UI | React 19, Tailwind CSS v4 |
+| ORM | Prisma 7 with `@prisma/adapter-mariadb` |
+| Database | MariaDB / MySQL |
+| Auth | JWT (jose) + bcryptjs, Google OAuth, GitHub OAuth |
+| Charts | Recharts |
+| Payments | Xendit |
+| Deployment | Vercel |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- MariaDB or MySQL instance
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/kanzennn/BugReportManager.git
+cd BugReportManager
+npm install
+```
+
+### 2. Configure environment
+
+Create a `.env` file in the project root:
+
+```env
+# Database
+DATABASE_URL="mysql://user:password@localhost:3306/bug_report_manager"
+
+# Auth
+JWT_SECRET="your-secret-key"
+
+# OAuth (optional)
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
+
+# Xendit (optional — required for billing)
+XENDIT_SECRET_KEY=""
+XENDIT_WEBHOOK_TOKEN=""
+XENDIT_PRO_PLAN_KEY=""
+XENDIT_BUSINESS_PLAN_KEY=""
+
+# App
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+WHATSAPP_NUMBER="628xxxxxxxxxx"
+```
+
+### 3. Run database migrations
+
+```bash
+npx prisma migrate deploy
+npx prisma generate
+```
+
+### 4. (Optional) Seed demo data
+
+```bash
+npx tsx prisma/seed.ts
+```
+
+This creates two accounts and sample data:
+
+| Email | Password | Plan |
+|---|---|---|
+| `demo@example.com` | `demo1234` | Pro |
+| `team@example.com` | `demo1234` | Free |
+
+### 5. Start the dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev      # Development server (Turbopack)
+npm run build    # Production build
+npm run start    # Production server
+npm run lint     # ESLint
 
-## Learn More
+npx prisma migrate dev    # Create and run a new migration
+npx prisma generate       # Regenerate Prisma Client
+npx prisma studio         # Open Prisma Studio GUI
+npx tsx prisma/seed.ts    # Seed demo data
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Public API
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+External applications submit reports using their API key.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Submit a bug report
 
-## Deploy on Vercel
+```bash
+POST /api/v1/report
+x-api-key: brm_<your-api-key>
+Content-Type: application/json
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+{
+  "title": "App crashes on login",
+  "description": "Reproducible on Android 14",
+  "priority": "HIGH",        # LOW | MEDIUM | HIGH | CRITICAL
+  "appVersion": "2.1.0",
+  "deviceInfo": "Pixel 7 / Android 14",
+  "stackTrace": "...",
+  "reporterEmail": "user@example.com"
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Submit feedback
+
+```bash
+POST /api/v1/feedback
+x-api-key: brm_<your-api-key>
+Content-Type: application/json
+
+{
+  "title": "Love the new UI",
+  "message": "The redesign is much cleaner.",
+  "type": "COMPLIMENT",      # GENERAL | SUGGESTION | COMPLAINT | COMPLIMENT
+  "rating": 5,
+  "reporterEmail": "user@example.com"
+}
+```
+
+### Fetch bugs
+
+```bash
+GET /api/v1/bugs?status=OPEN&priority=HIGH&limit=20&offset=0
+x-api-key: brm_<your-api-key>
+```
+
+CORS is enabled on all `/api/v1/*` endpoints.
+
+## Plans
+
+| Feature | Free | Pro | Business |
+|---|---|---|---|
+| Applications | 3 | Unlimited | Unlimited |
+| Bug reports | Unlimited | Unlimited | Unlimited |
+| Feedback | Unlimited | Unlimited | Unlimited |
+| Analytics & PDF export | — | ✓ | ✓ |
+| Team invitations & RBAC | — | — | ✓ |
+
+## Project Structure
+
+```
+app/
+  (auth)/               # Login, register — no sidebar
+  (print)/              # Print-only routes (PDF export)
+  dashboard/            # Protected dashboard pages
+  api/v1/               # Public bug/feedback API
+  api/                  # Internal API (OAuth, Xendit, etc.)
+components/
+  analytics/            # PDF export components
+  dashboard/            # Charts, stat cards
+  layout/               # Sidebar, mobile nav
+  ui/                   # Shared UI (badges, buttons)
+prisma/
+  schema.prisma
+  seed.ts
+```
+
+## Deployment
+
+The project is configured for Vercel. The `vercel-build` script runs migrations automatically:
+
+```json
+"vercel-build": "prisma generate && prisma migrate deploy && next build"
+```
+
+Set all environment variables in your Vercel project settings before deploying.
