@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { StatusBadge, PriorityBadge } from '@/components/ui/badge'
 import { BugFilters } from '@/components/bugs/bug-filters'
 import { relativeTime } from '@/lib/utils'
+import { getLocale } from '@/lib/locale'
+import { createTranslator } from '@/lib/i18n'
 import type { BugStatus, Priority } from '@prisma/client'
 
 const STATUS_OPTIONS: BugStatus[] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']
@@ -23,6 +25,8 @@ export default async function BugsPage({
 }) {
   const sp = await searchParams
   const { userId } = await requireAuth()
+  const locale = await getLocale()
+  const t = createTranslator(locale)
 
   const status = STATUS_OPTIONS.find((s) => s === sp.status?.toUpperCase())
   const priority = PRIORITY_OPTIONS.find((p) => p === sp.priority?.toUpperCase())
@@ -56,9 +60,9 @@ export default async function BugsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-zinc-100">Bug Reports</h1>
+        <h1 className="text-2xl font-bold text-zinc-100">{t('bugs.title')}</h1>
         <p className="mt-1 text-sm text-zinc-400">
-          {bugs.length} report{bugs.length !== 1 ? 's' : ''} found
+          {bugs.length} {locale === 'id' ? 'laporan ditemukan' : `report${bugs.length !== 1 ? 's' : ''} found`}
         </p>
       </div>
 
@@ -67,17 +71,15 @@ export default async function BugsPage({
       <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
         {bugs.length === 0 ? (
           <div className="px-5 py-16 text-center text-sm text-zinc-500">
-            No bugs found matching your filters.
+            {t('bugs.empty')}
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-zinc-800 bg-zinc-800/50">
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">Bug</th>
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">Application</th>
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">Priority</th>
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">Status</th>
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">Reported</th>
+                {['bugs.table.bug', 'bugs.table.application', 'bugs.table.priority', 'bugs.table.status', 'bugs.table.reported'].map((k) => (
+                  <th key={k} className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">{t(k)}</th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800">
@@ -98,7 +100,7 @@ export default async function BugsPage({
                   </td>
                   <td className="px-5 py-3.5"><PriorityBadge priority={bug.priority} /></td>
                   <td className="px-5 py-3.5"><StatusBadge status={bug.status} /></td>
-                  <td className="px-5 py-3.5 text-xs text-zinc-500">{relativeTime(bug.createdAt)}</td>
+                  <td className="px-5 py-3.5 text-xs text-zinc-500">{relativeTime(bug.createdAt, locale)}</td>
                 </tr>
               ))}
             </tbody>

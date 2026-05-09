@@ -4,15 +4,18 @@ import { useEffect, useState } from 'react'
 import { useTheme } from 'next-themes'
 import { Sun, Moon, Monitor } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/components/language-provider'
+import type { Locale } from '@/lib/i18n'
 
 const OPTIONS = [
-  { value: 'light',  label: 'Light',  icon: Sun },
-  { value: 'dark',   label: 'Dark',   icon: Moon },
-  { value: 'system', label: 'System', icon: Monitor },
+  { value: 'light',  labelKey: 'settings.theme.light',  icon: Sun },
+  { value: 'dark',   labelKey: 'settings.theme.dark',   icon: Moon },
+  { value: 'system', labelKey: 'settings.theme.system', icon: Monitor },
 ] as const
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
+  const { t } = useLanguage()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
@@ -20,7 +23,7 @@ export function ThemeToggle() {
 
   return (
     <div className="flex gap-2">
-      {OPTIONS.map(({ value, label, icon: Icon }) => (
+      {OPTIONS.map(({ value, labelKey, icon: Icon }) => (
         <button
           key={value}
           type="button"
@@ -33,7 +36,7 @@ export function ThemeToggle() {
           )}
         >
           <Icon className="h-4 w-4" />
-          {label}
+          {t(labelKey)}
         </button>
       ))}
     </div>

@@ -13,9 +13,10 @@ model User {
   password               String?
   avatarUrl              String?
   lastSeenAt             DateTime?
+  locale                 String              @default("en")
   plan                   Plan                @default(FREE)
-  stripeCustomerId       String?             @unique
-  stripeSubscriptionId   String?             @unique
+  xenditCustomerId       String?             @unique
+  xenditSubscriptionId   String?             @unique
   subscriptionStatus     SubscriptionStatus  @default(INACTIVE)
   isAdmin                Boolean             @default(false)
   applications           Application[]
@@ -198,7 +199,7 @@ model Transaction {
   amount           Int
   currency         String            @default("usd")
   status           TransactionStatus @default(SUCCEEDED)
-  stripePaymentId  String?           @unique
+  paymentId        String?           @unique
   plan             Plan
   createdAt        DateTime          @default(now())
 
@@ -212,10 +213,10 @@ enum TransactionStatus {
 }
 
 model PlanConfig {
-  id            String   @id
-  plan          Plan     @unique
-  displayPrice  Int
-  stripePriceId String   @default("")
-  features      Json
-  updatedAt     DateTime @updatedAt
+  id           String   @id
+  plan         Plan     @unique
+  displayPrice Int
+  planKey      String   @default("")
+  features     Json
+  updatedAt    DateTime @updatedAt
 }

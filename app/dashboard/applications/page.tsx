@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db'
 import Link from 'next/link'
 import { Plus, Monitor, Smartphone, Globe, Laptop2, Bug, Users } from 'lucide-react'
 import type { AppType, MemberRole } from '@prisma/client'
+import { getLocale } from '@/lib/locale'
+import { createTranslator } from '@/lib/i18n'
 
 const typeIcon: Record<AppType, typeof Monitor> = {
   WEBSITE: Globe,
@@ -64,6 +66,8 @@ function AppCard({ app, role }: { app: AppCardData; role?: string }) {
 
 export default async function ApplicationsPage() {
   const { userId } = await requireAuth()
+  const locale = await getLocale()
+  const t = createTranslator(locale)
 
   const [ownedApps, memberships] = await Promise.all([
     prisma.application.findMany({
@@ -87,33 +91,32 @@ export default async function ApplicationsPage() {
 
   return (
     <div className="space-y-8">
-      {/* My Applications */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-100">Applications</h1>
-            <p className="mt-1 text-sm text-zinc-400">Manage your applications and their API keys.</p>
+            <h1 className="text-2xl font-bold text-zinc-100">{t('apps.title')}</h1>
+            <p className="mt-1 text-sm text-zinc-400">{t('apps.description')}</p>
           </div>
           <Link
             href="/dashboard/applications/new"
             className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
           >
             <Plus className="h-4 w-4" />
-            New Application
+            {t('apps.newApp')}
           </Link>
         </div>
 
         {ownedApps.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-700 bg-zinc-900 py-20">
             <Bug className="mb-4 h-10 w-10 text-zinc-600" />
-            <p className="text-sm font-medium text-zinc-400">No applications yet</p>
-            <p className="mt-1 text-xs text-zinc-600">Create your first application to get an API key.</p>
+            <p className="text-sm font-medium text-zinc-400">{t('apps.empty.title')}</p>
+            <p className="mt-1 text-xs text-zinc-600">{t('apps.empty.description')}</p>
             <Link
               href="/dashboard/applications/new"
               className="mt-4 flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
             >
               <Plus className="h-4 w-4" />
-              New Application
+              {t('apps.newApp')}
             </Link>
           </div>
         ) : (
@@ -123,12 +126,11 @@ export default async function ApplicationsPage() {
         )}
       </div>
 
-      {/* Shared with me */}
       {sharedApps.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-zinc-400" />
-            <h2 className="text-base font-semibold text-zinc-100">Shared with me</h2>
+            <h2 className="text-base font-semibold text-zinc-100">{t('apps.sharedWithMe')}</h2>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {sharedApps.map((app) => (

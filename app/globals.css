@@ -42,6 +42,11 @@ body {
   color: var(--color-zinc-100);
 }
 
+@keyframes nav-progress {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
 /* Scrollbar — uses non-overridden zinc-400/500/800 so it looks right in both modes */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--color-zinc-800); }

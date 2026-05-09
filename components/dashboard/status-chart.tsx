@@ -8,10 +8,10 @@ interface StatusEntry {
   color: string
 }
 
-export function StatusChart({ data }: { data: StatusEntry[] }) {
+export function StatusChart({ data, title }: { data: StatusEntry[]; title: string }) {
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
-      <h3 className="mb-4 text-sm font-semibold text-zinc-100">Bugs by Status</h3>
+      <h3 className="mb-4 text-sm font-semibold text-zinc-100">{title}</h3>
       <ResponsiveContainer width="100%" height={220}>
         <PieChart>
           <Pie data={data} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={3} dataKey="value">

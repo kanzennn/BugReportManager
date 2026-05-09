@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { FeedbackTypeBadge, FeedbackStatusBadge } from '@/components/ui/badge'
 import { FeedbackFilters } from '@/components/feedback/feedback-filters'
 import { relativeTime } from '@/lib/utils'
+import { getLocale } from '@/lib/locale'
+import { createTranslator } from '@/lib/i18n'
 import type { FeedbackType, FeedbackStatus } from '@prisma/client'
 
 const TYPE_OPTIONS: FeedbackType[] = ['GENERAL', 'SUGGESTION', 'COMPLAINT', 'COMPLIMENT']
@@ -23,8 +25,10 @@ export default async function FeedbackPage({
 }) {
   const sp = await searchParams
   const { userId } = await requireAuth()
+  const locale = await getLocale()
+  const t = createTranslator(locale)
 
-  const type = TYPE_OPTIONS.find((t) => t === sp.type?.toUpperCase())
+  const type = TYPE_OPTIONS.find((t2) => t2 === sp.type?.toUpperCase())
   const status = STATUS_OPTIONS.find((s) => s === sp.status?.toUpperCase())
 
   const [items, apps] = await Promise.all([
@@ -56,9 +60,9 @@ export default async function FeedbackPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-zinc-100">Feedback</h1>
+        <h1 className="text-2xl font-bold text-zinc-100">{t('feedback.title')}</h1>
         <p className="mt-1 text-sm text-zinc-400">
-          {items.length} item{items.length !== 1 ? 's' : ''} found
+          {items.length} {locale === 'id' ? 'item ditemukan' : `item${items.length !== 1 ? 's' : ''} found`}
         </p>
       </div>
 
@@ -67,17 +71,15 @@ export default async function FeedbackPage({
       <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
         {items.length === 0 ? (
           <div className="px-5 py-16 text-center text-sm text-zinc-500">
-            No feedback found matching your filters.
+            {t('feedback.empty')}
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-zinc-800 bg-zinc-800/50">
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">Feedback</th>
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">Application</th>
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">Type</th>
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">Status</th>
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">Received</th>
+                {['feedback.table.feedback', 'feedback.table.application', 'feedback.table.type', 'feedback.table.status', 'feedback.table.received'].map((k) => (
+                  <th key={k} className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-400">{t(k)}</th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800">
@@ -101,7 +103,7 @@ export default async function FeedbackPage({
                   </td>
                   <td className="px-5 py-3.5"><FeedbackTypeBadge type={item.type} /></td>
                   <td className="px-5 py-3.5"><FeedbackStatusBadge status={item.status} /></td>
-                  <td className="px-5 py-3.5 text-xs text-zinc-500">{relativeTime(item.createdAt)}</td>
+                  <td className="px-5 py-3.5 text-xs text-zinc-500">{relativeTime(item.createdAt, locale)}</td>
                 </tr>
               ))}
             </tbody>

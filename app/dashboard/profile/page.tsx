@@ -8,6 +8,8 @@ import { ConfirmButton } from '@/components/ui/confirm-button'
 import { deleteAccountAction } from '@/app/actions/profile'
 import { formatDate } from '@/lib/utils'
 import { KeyRound, Link2, UserCircle, ShieldAlert } from 'lucide-react'
+import { getLocale } from '@/lib/locale'
+import { createTranslator } from '@/lib/i18n'
 
 function GoogleIcon() {
   return (
@@ -28,7 +30,7 @@ function GitHubIcon() {
   )
 }
 
-function ProviderBadge({ provider }: { provider: string }) {
+function ProviderBadge({ provider, connectedLabel, activeLabel }: { provider: string; connectedLabel: string; activeLabel: string }) {
   const isGoogle = provider === 'google'
   return (
     <div className="flex items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3">
@@ -37,11 +39,11 @@ function ProviderBadge({ provider }: { provider: string }) {
       </div>
       <div>
         <p className="text-sm font-medium text-zinc-100 capitalize">{provider}</p>
-        <p className="text-xs text-zinc-500">Connected</p>
+        <p className="text-xs text-zinc-500">{connectedLabel}</p>
       </div>
       <div className="ml-auto">
         <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400">
-          Active
+          {activeLabel}
         </span>
       </div>
     </div>
@@ -50,6 +52,8 @@ function ProviderBadge({ provider }: { provider: string }) {
 
 export default async function ProfilePage() {
   const { userId } = await requireAuth()
+  const locale = await getLocale()
+  const t = createTranslator(locale)
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -74,85 +78,86 @@ export default async function ProfilePage() {
     .toUpperCase()
     .slice(0, 2)
 
+  const appCount = user._count.applications
+  const appLabel = locale === 'id'
+    ? `${appCount} aplikasi`
+    : `${appCount} app${appCount !== 1 ? 's' : ''}`
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-zinc-100">Profile</h1>
-        <p className="mt-1 text-sm text-zinc-400">Manage your account settings.</p>
+        <h1 className="text-2xl font-bold text-zinc-100">{t('profile.title')}</h1>
+        <p className="mt-1 text-sm text-zinc-400">{t('profile.description')}</p>
       </div>
 
-      {/* Avatar */}
       <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6 space-y-1">
         <div className="mb-4">
           <p className="text-sm font-semibold text-zinc-100">{user.name}</p>
           <p className="text-xs text-zinc-500">
-            {user.email} · Member since {formatDate(user.createdAt)} · {user._count.applications} app{user._count.applications !== 1 ? 's' : ''}
+            {user.email} · {t('profile.memberSince')} {formatDate(user.createdAt, locale)} · {appLabel}
           </p>
         </div>
         <AvatarUpload currentUrl={user.avatarUrl} initials={initials} />
       </div>
 
-      {/* Edit profile */}
       <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
         <div className="mb-5 flex items-center gap-2">
           <UserCircle className="h-4 w-4 text-zinc-400" />
-          <h2 className="text-sm font-semibold text-zinc-100">Personal information</h2>
+          <h2 className="text-sm font-semibold text-zinc-100">{t('profile.personalInfo')}</h2>
         </div>
         <div className="mb-5 space-y-1">
-          <p className="text-xs font-medium text-zinc-500">Email address</p>
+          <p className="text-xs font-medium text-zinc-500">{t('profile.emailAddress')}</p>
           <p className="text-sm text-zinc-300">{user.email}</p>
-          <p className="text-xs text-zinc-600">Email cannot be changed.</p>
+          <p className="text-xs text-zinc-600">{t('profile.emailCantChange')}</p>
         </div>
         <EditProfileForm currentName={user.name} />
       </div>
 
-      {/* Connected accounts */}
       {user.oauthAccounts.length > 0 && (
         <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
           <div className="mb-5 flex items-center gap-2">
             <Link2 className="h-4 w-4 text-zinc-400" />
-            <h2 className="text-sm font-semibold text-zinc-100">Connected accounts</h2>
+            <h2 className="text-sm font-semibold text-zinc-100">{t('profile.connectedAccounts')}</h2>
           </div>
           <div className="space-y-2">
             {user.oauthAccounts.map((acc) => (
-              <ProviderBadge key={acc.provider} provider={acc.provider} />
+              <ProviderBadge
+                key={acc.provider}
+                provider={acc.provider}
+                connectedLabel={t('profile.connected')}
+                activeLabel={t('profile.active')}
+              />
             ))}
           </div>
           {!hasPassword && (
-            <p className="mt-3 text-xs text-zinc-600">
-              Your account uses social login. You can sign in using the connected provider above.
-            </p>
+            <p className="mt-3 text-xs text-zinc-600">{t('profile.socialLogin')}</p>
           )}
         </div>
       )}
 
-      {/* Change password */}
       {hasPassword && (
         <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
           <div className="mb-5 flex items-center gap-2">
             <KeyRound className="h-4 w-4 text-zinc-400" />
-            <h2 className="text-sm font-semibold text-zinc-100">Change password</h2>
+            <h2 className="text-sm font-semibold text-zinc-100">{t('profile.changePassword')}</h2>
           </div>
           <ChangePasswordForm />
         </div>
       )}
 
-      {/* Danger zone */}
       <div className="rounded-xl border border-red-900/40 bg-zinc-900 p-6">
         <div className="mb-3 flex items-center gap-2">
           <ShieldAlert className="h-4 w-4 text-red-400" />
-          <h2 className="text-sm font-semibold text-red-400">Danger zone</h2>
+          <h2 className="text-sm font-semibold text-red-400">{t('profile.dangerZone')}</h2>
         </div>
-        <p className="mb-4 text-sm text-zinc-400">
-          Permanently delete your account and all associated data — applications, bug reports, feedback, and members. This cannot be undone.
-        </p>
+        <p className="mb-4 text-sm text-zinc-400">{t('profile.deleteDescription')}</p>
         <ConfirmButton
-            title="Are you sure?"
+          title={t('profile.confirmDeleteTitle')}
           action={deleteAccountAction}
-          message="Delete your account and all data? This cannot be undone."
+          message={t('profile.confirmDelete')}
           className="flex items-center gap-2 rounded-lg border border-red-800/50 px-4 py-2 text-sm font-medium text-red-400 transition-colors hover:border-red-600 hover:bg-red-500/10"
         >
-          Delete account
+          {t('profile.deleteAccount')}
         </ConfirmButton>
       </div>
     </div>

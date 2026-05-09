@@ -34,7 +34,7 @@ export default async function AdminTransactionsPage({
   ])
 
   const totalPages = Math.ceil(total / pageSize)
-  const totalRevenue = ((revenueAgg._sum.amount ?? 0) / 100).toFixed(2)
+  const totalRevenue = (revenueAgg._sum.amount ?? 0).toLocaleString('id-ID')
 
   return (
     <div className="space-y-6">
@@ -42,7 +42,7 @@ export default async function AdminTransactionsPage({
         <div>
           <h1 className="text-2xl font-bold text-zinc-100">Transactions</h1>
           <p className="mt-1 text-sm text-zinc-400">
-            {total} transactions · ${totalRevenue} total revenue
+            {total} transactions · Rp {totalRevenue} total revenue
           </p>
         </div>
       </div>
@@ -51,7 +51,7 @@ export default async function AdminTransactionsPage({
         <table className="w-full text-sm">
           <thead className="border-b border-zinc-800 bg-zinc-900">
             <tr>
-              {['User', 'Plan', 'Amount', 'Status', 'Stripe ID', 'Date'].map((h) => (
+              {['User', 'Plan', 'Amount', 'Status', 'Payment ID', 'Date'].map((h) => (
                 <th key={h} className="px-4 py-3 text-left font-medium text-zinc-400">{h}</th>
               ))}
             </tr>
@@ -69,7 +69,7 @@ export default async function AdminTransactionsPage({
                   </span>
                 </td>
                 <td className="px-4 py-3 text-zinc-100 font-medium">
-                  ${(t.amount / 100).toFixed(2)} <span className="text-xs text-zinc-500 uppercase">{t.currency}</span>
+                  Rp {t.amount.toLocaleString('id-ID')} <span className="text-xs text-zinc-500 uppercase">{t.currency}</span>
                 </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[t.status]}`}>
@@ -77,7 +77,7 @@ export default async function AdminTransactionsPage({
                   </span>
                 </td>
                 <td className="px-4 py-3 text-zinc-500 font-mono text-xs">
-                  {t.stripePaymentId ? t.stripePaymentId.slice(0, 20) + '…' : '—'}
+                  {t.paymentId ? t.paymentId.slice(0, 20) + '…' : '—'}
                 </td>
                 <td className="px-4 py-3 text-zinc-500 text-xs">
                   {t.createdAt.toLocaleDateString()}

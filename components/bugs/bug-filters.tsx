@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { useLanguage } from '@/components/language-provider'
 
 const STATUS_OPTIONS = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'] as const
 const PRIORITY_OPTIONS = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const
@@ -11,14 +12,11 @@ interface App {
   name: string
 }
 
-function statusLabel(s: string) {
-  return s === 'IN_PROGRESS' ? 'In Progress' : s.charAt(0) + s.slice(1).toLowerCase()
-}
-
 export function BugFilters({ apps }: { apps: App[] }) {
   const router = useRouter()
   const pathname = usePathname()
   const sp = useSearchParams()
+  const { t } = useLanguage()
 
   const currentStatus = sp.get('status') ?? undefined
   const currentPriority = sp.get('priority') ?? undefined
@@ -36,23 +34,21 @@ export function BugFilters({ apps }: { apps: App[] }) {
 
   return (
     <div className="flex flex-wrap gap-3">
-      {/* Search */}
       <form method="get" action="/dashboard/bugs" className="flex-1 min-w-48">
         <input
           name="q"
           defaultValue={currentQ}
-          placeholder="Search bugs…"
+          placeholder={t('filters.searchBugs')}
           className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none"
         />
       </form>
 
-      {/* Status tabs */}
       <div className="flex gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 p-1">
         <Link
           href={buildUrl({ status: undefined })}
           className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${!currentStatus ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'}`}
         >
-          All
+          {t('filters.all')}
         </Link>
         {STATUS_OPTIONS.map((s) => (
           <Link
@@ -60,31 +56,29 @@ export function BugFilters({ apps }: { apps: App[] }) {
             href={buildUrl({ status: s })}
             className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${currentStatus === s ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'}`}
           >
-            {statusLabel(s)}
+            {t(`status.${s}`)}
           </Link>
         ))}
       </div>
 
-      {/* Priority */}
       <select
         value={currentPriority ?? ''}
         onChange={(e) => router.push(buildUrl({ priority: e.target.value || undefined }))}
         className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-300 focus:border-indigo-500 focus:outline-none"
       >
-        <option value="">All Priorities</option>
+        <option value="">{t('filters.allPriorities')}</option>
         {PRIORITY_OPTIONS.map((p) => (
-          <option key={p} value={p}>{p.charAt(0) + p.slice(1).toLowerCase()}</option>
+          <option key={p} value={p}>{t(`priority.${p}`)}</option>
         ))}
       </select>
 
-      {/* App */}
       {apps.length > 1 && (
         <select
           value={currentAppId ?? ''}
           onChange={(e) => router.push(buildUrl({ appId: e.target.value || undefined }))}
           className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-300 focus:border-indigo-500 focus:outline-none"
         >
-          <option value="">All Apps</option>
+          <option value="">{t('filters.allApps')}</option>
           {apps.map((a) => (
             <option key={a.id} value={a.id}>{a.name}</option>
           ))}
