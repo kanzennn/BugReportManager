@@ -3,11 +3,13 @@ import { prisma } from '@/lib/db'
 import Link from 'next/link'
 import { FeedbackTypeBadge, FeedbackStatusBadge } from '@/components/ui/badge'
 import { FeedbackFilters } from '@/components/feedback/feedback-filters'
+import { Pagination } from '@/components/ui/pagination'
 import { relativeTime } from '@/lib/utils'
 import { getLocale } from '@/lib/locale'
 import { createTranslator } from '@/lib/i18n'
 import type { FeedbackType, FeedbackStatus } from '@prisma/client'
 
+const PAGE_SIZE = 10
 const TYPE_OPTIONS: FeedbackType[] = ['GENERAL', 'SUGGESTION', 'COMPLAINT', 'COMPLIMENT']
 const STATUS_OPTIONS: FeedbackStatus[] = ['NEW', 'READ', 'ARCHIVED']
 
@@ -21,7 +23,7 @@ const accessible = (userId: string) => ({
 export default async function FeedbackPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; type?: string; appId?: string; q?: string }>
+  searchParams: Promise<{ status?: string; type?: string; appId?: string; q?: string; page?: string }>
 }) {
   const sp = await searchParams
   const { userId } = await requireAuth()
@@ -30,39 +32,46 @@ export default async function FeedbackPage({
 
   const type = TYPE_OPTIONS.find((t2) => t2 === sp.type?.toUpperCase())
   const status = STATUS_OPTIONS.find((s) => s === sp.status?.toUpperCase())
+  const page = Math.max(1, parseInt(sp.page ?? '1', 10) || 1)
 
-  const [items, apps] = await Promise.all([
+  const where = {
+    application: {
+      ...accessible(userId),
+      ...(sp.appId && { id: sp.appId }),
+    },
+    ...(type && { type }),
+    ...(status && { status }),
+    ...(sp.q && {
+      OR: [
+        { title: { contains: sp.q } },
+        { message: { contains: sp.q } },
+      ],
+    }),
+  }
+
+  const [items, total, apps] = await Promise.all([
     prisma.feedback.findMany({
-      where: {
-        application: {
-          ...accessible(userId),
-          ...(sp.appId && { id: sp.appId }),
-        },
-        ...(type && { type }),
-        ...(status && { status }),
-        ...(sp.q && {
-          OR: [
-            { title: { contains: sp.q } },
-            { message: { contains: sp.q } },
-          ],
-        }),
-      },
+      where,
       orderBy: { createdAt: 'desc' },
-      take: 100,
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
       include: { application: { select: { id: true, name: true } } },
     }),
+    prisma.feedback.count({ where }),
     prisma.application.findMany({
       where: accessible(userId),
       select: { id: true, name: true },
     }),
   ])
 
+  const totalPages = Math.ceil(total / PAGE_SIZE)
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-zinc-100">{t('feedback.title')}</h1>
         <p className="mt-1 text-sm text-zinc-400">
-          {items.length} {locale === 'id' ? 'item ditemukan' : `item${items.length !== 1 ? 's' : ''} found`}
+          {total} {locale === 'id' ? 'item ditemukan' : `item${total !== 1 ? 's' : ''} found`}
         </p>
       </div>
 
@@ -136,6 +145,7 @@ export default async function FeedbackPage({
                 </Link>
               ))}
             </div>
+            <Pagination page={page} totalPages={totalPages} total={total} pageSize={PAGE_SIZE} />
           </>
         )}
       </div>

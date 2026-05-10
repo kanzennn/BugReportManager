@@ -3,11 +3,13 @@ import { prisma } from '@/lib/db'
 import Link from 'next/link'
 import { StatusBadge, PriorityBadge } from '@/components/ui/badge'
 import { BugFilters } from '@/components/bugs/bug-filters'
+import { Pagination } from '@/components/ui/pagination'
 import { relativeTime } from '@/lib/utils'
 import { getLocale } from '@/lib/locale'
 import { createTranslator } from '@/lib/i18n'
 import type { BugStatus, Priority } from '@prisma/client'
 
+const PAGE_SIZE = 10
 const STATUS_OPTIONS: BugStatus[] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']
 const PRIORITY_OPTIONS: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
 
@@ -21,7 +23,7 @@ const accessible = (userId: string) => ({
 export default async function BugsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; priority?: string; appId?: string; q?: string }>
+  searchParams: Promise<{ status?: string; priority?: string; appId?: string; q?: string; page?: string }>
 }) {
   const sp = await searchParams
   const { userId } = await requireAuth()
@@ -30,39 +32,46 @@ export default async function BugsPage({
 
   const status = STATUS_OPTIONS.find((s) => s === sp.status?.toUpperCase())
   const priority = PRIORITY_OPTIONS.find((p) => p === sp.priority?.toUpperCase())
+  const page = Math.max(1, parseInt(sp.page ?? '1', 10) || 1)
 
-  const [bugs, apps] = await Promise.all([
+  const where = {
+    application: {
+      ...accessible(userId),
+      ...(sp.appId && { id: sp.appId }),
+    },
+    ...(status && { status }),
+    ...(priority && { priority }),
+    ...(sp.q && {
+      OR: [
+        { title: { contains: sp.q } },
+        { description: { contains: sp.q } },
+      ],
+    }),
+  }
+
+  const [bugs, total, apps] = await Promise.all([
     prisma.bugReport.findMany({
-      where: {
-        application: {
-          ...accessible(userId),
-          ...(sp.appId && { id: sp.appId }),
-        },
-        ...(status && { status }),
-        ...(priority && { priority }),
-        ...(sp.q && {
-          OR: [
-            { title: { contains: sp.q } },
-            { description: { contains: sp.q } },
-          ],
-        }),
-      },
+      where,
       orderBy: { createdAt: 'desc' },
-      take: 100,
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
       include: { application: { select: { id: true, name: true } } },
     }),
+    prisma.bugReport.count({ where }),
     prisma.application.findMany({
       where: accessible(userId),
       select: { id: true, name: true },
     }),
   ])
 
+  const totalPages = Math.ceil(total / PAGE_SIZE)
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-zinc-100">{t('bugs.title')}</h1>
         <p className="mt-1 text-sm text-zinc-400">
-          {bugs.length} {locale === 'id' ? 'laporan ditemukan' : `report${bugs.length !== 1 ? 's' : ''} found`}
+          {total} {locale === 'id' ? 'laporan ditemukan' : `report${total !== 1 ? 's' : ''} found`}
         </p>
       </div>
 
@@ -130,6 +139,7 @@ export default async function BugsPage({
                 </Link>
               ))}
             </div>
+            <Pagination page={page} totalPages={totalPages} total={total} pageSize={PAGE_SIZE} />
           </>
         )}
       </div>
