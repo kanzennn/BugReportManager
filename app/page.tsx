@@ -1,8 +1,16 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { LogoIcon } from '@/components/logo'
 import { Bug, MessageSquare, Users, Zap, Check } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'BugReport — Track bugs, ship better software',
+  description:
+    'Collect bug reports and user feedback from your mobile, web, and desktop apps via a simple REST API. Manage everything in one dashboard. Free to start.',
+  alternates: { canonical: '/' },
+}
 
 export default async function LandingPage() {
   const session = await getSession()

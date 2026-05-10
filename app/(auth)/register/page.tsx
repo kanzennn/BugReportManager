@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { Bug } from 'lucide-react'
 import { RegisterForm } from './register-form'
+
+export const metadata: Metadata = {
+  title: 'Get Started Free',
+  description: 'Create your free BugReport account and start collecting bug reports from your apps in minutes. No credit card required.',
+}
 
 export default function RegisterPage() {
   return (

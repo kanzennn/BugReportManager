@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { Bug } from 'lucide-react'
 import { LoginForm } from './login-form'
+
+export const metadata: Metadata = {
+  title: 'Sign In',
+  description: 'Sign in to your BugReport account to manage bug reports and user feedback from all your apps.',
+}
 
 export default function LoginPage() {
   return (

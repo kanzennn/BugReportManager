@@ -8,9 +8,56 @@ import { Providers } from '@/components/providers'
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://bugreportmanager.vercel.app'
+
 export const metadata: Metadata = {
-  title: 'Bug Report Manager',
-  description: 'Manage bug reports across all your applications',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'BugReport — Track bugs, ship better software',
+    template: '%s | BugReport',
+  },
+  description:
+    'Collect bug reports and user feedback from your mobile, web, and desktop apps via a simple REST API. Manage everything in one dashboard. Free to start.',
+  keywords: [
+    'bug tracking',
+    'bug report',
+    'error tracking',
+    'feedback management',
+    'crash reporting',
+    'app monitoring',
+    'bug tracker',
+    'mobile bug report',
+  ],
+  authors: [{ name: 'BugReport' }],
+  creator: 'BugReport',
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: siteUrl,
+    siteName: 'BugReport',
+    title: 'BugReport — Track bugs, ship better software',
+    description:
+      'Collect bug reports and user feedback from your apps via a simple API. Manage everything in one dashboard. Free to start.',
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'BugReport' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BugReport — Track bugs, ship better software',
+    description:
+      'Collect bug reports and user feedback from your apps via a simple API. Manage everything in one dashboard. Free to start.',
+    images: ['/opengraph-image'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
