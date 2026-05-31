@@ -29,9 +29,9 @@ const registerSchema = z.object({
   email: z.string().email('Invalid email'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   redirectTo: z.string().optional(),
-  terms: z.literal('on', { errorMap: () => ({ message: 'You must accept the Terms and Conditions.' }) }),
-  heardFrom: z.enum(HEARD_FROM_OPTIONS, { errorMap: () => ({ message: 'Please select how you heard about us.' }) }),
-  userType: z.enum(USER_TYPE_OPTIONS, { errorMap: () => ({ message: 'Please select your role.' }) }),
+  terms: z.literal('on', { error: 'You must accept the Terms and Conditions.' }),
+  heardFrom: z.enum(HEARD_FROM_OPTIONS, { error: 'Please select how you heard about us.' }),
+  userType: z.enum(USER_TYPE_OPTIONS, { error: 'Please select your role.' }),
 })
 
 type ActionState = { error: string } | null

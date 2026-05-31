@@ -6,12 +6,12 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 const onboardingSchema = z.object({
-  terms: z.literal('on', { errorMap: () => ({ message: 'You must accept the Terms and Conditions.' }) }),
+  terms: z.literal('on', { error: 'You must accept the Terms and Conditions.' }),
   heardFrom: z.enum(['search', 'social', 'friend', 'youtube', 'github', 'other'], {
-    errorMap: () => ({ message: 'Please select how you heard about us.' }),
+    error: 'Please select how you heard about us.',
   }),
   userType: z.enum(['student', 'developer', 'freelancer', 'company', 'other'], {
-    errorMap: () => ({ message: 'Please select your role.' }),
+    error: 'Please select your role.',
   }),
 })
 
