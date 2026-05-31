@@ -17,6 +17,7 @@ export type MidtransSnapTransaction = {
 
 export async function createSnapTransaction(params: {
   orderId: string
+  itemId: string
   amount: number
   customerEmail: string
   customerName: string
@@ -41,7 +42,7 @@ export async function createSnapTransaction(params: {
       },
       item_details: [
         {
-          id: params.orderId,
+          id: params.itemId,
           price: params.amount,
           quantity: 1,
           name: params.itemName,

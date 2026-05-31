@@ -27,19 +27,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  // order_id format: brm_{userId}_{PLAN}_{timestamp}
+  // order_id format: brm_{16-char userId prefix}_{PLAN}_{timestamp}
   const parts = body.order_id.split('_')
   if (parts[0] !== 'brm' || parts.length < 4) {
     return NextResponse.json({ received: true })
   }
 
-  const userId = parts[1]
+  const userIdPrefix = parts[1]
   const plan = parts[2] as Plan
 
-  if (!userId || !(plan in Plan)) return NextResponse.json({ received: true })
+  if (!userIdPrefix || !(plan in Plan)) return NextResponse.json({ received: true })
 
-  const user = await prisma.user.findUnique({ where: { id: userId } })
+  const user = await prisma.user.findFirst({ where: { id: { startsWith: userIdPrefix } } })
   if (!user) return NextResponse.json({ received: true })
+  const userId = user.id
 
   const isSuccess =
     body.transaction_status === 'settlement' ||

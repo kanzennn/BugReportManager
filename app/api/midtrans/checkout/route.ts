@@ -18,14 +18,17 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
-  const orderId = `brm_${user.id}_${plan}_${Date.now()}`
+  // Midtrans order_id limit: 50 chars
+  // Format: brm_{16-char userId prefix}_{plan}_{timestamp}  → max 43 chars
+  const orderId = `brm_${user.id.slice(0, 16)}_${plan}_${Date.now()}`
 
   const transaction = await createSnapTransaction({
     orderId,
+    itemId: `brm-${plan.toLowerCase()}`,
     amount: PLANS[plan].price,
     customerEmail: user.email,
     customerName: user.name,
-    itemName: `BRM ${PLANS[plan].name} Plan - Monthly`,
+    itemName: `BugReport ${PLANS[plan].name} Plan`,
     finishUrl: `${baseUrl}/dashboard/billing?payment=success`,
     errorUrl: `${baseUrl}/dashboard/billing`,
   })
