@@ -2,7 +2,7 @@ import { createHash } from 'crypto'
 
 const SNAP_BASE_URL =
   process.env.NODE_ENV === 'production'
-    ? 'https://app.midtrans.com'
+    ? 'https://app.sandbox.midtrans.com'
     : 'https://app.sandbox.midtrans.com'
 
 function authHeader() {
