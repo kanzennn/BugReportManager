@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { Priority } from '@prisma/client'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
 const reportSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255),
@@ -32,6 +33,10 @@ export async function POST(req: NextRequest) {
   }
 
   const apiKey = req.headers.get('x-api-key')
+  if (apiKey) {
+    const rl = rateLimit(`report:${apiKey}`, 30, 60_000)
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfter, cors)
+  }
   if (!apiKey) {
     return NextResponse.json({ error: 'Missing x-api-key header' }, { status: 401, headers: cors })
   }

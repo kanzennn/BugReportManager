@@ -9,8 +9,13 @@ A full-stack bug report and feedback management platform built with Next.js 16. 
 - **Team collaboration** — Invite members with role-based access (Viewer, Editor, Admin)
 - **Analytics** — Per-app analytics with charts for bug trends, status/priority breakdowns, feedback ratings, and affected versions (Pro & Business)
 - **PDF export** — Export analytics as a formatted A4 PDF document
-- **Billing** — Free / Pro / Business plans via Xendit
+- **Billing** — Free / Pro / Business plans via Midtrans
 - **OAuth** — Sign in with Google or GitHub
+- **Password reset** — Self-service via email link
+- **Email notifications** — Status change emails to bug reporters; invitation emails
+- **CSV export** — Download all bugs or feedback as CSV
+- **Rate limiting** — Sliding-window protection on auth and public API
+- **Admin panel** — User management, banning, plan overrides, transaction history
 - **Responsive** — Fully usable on mobile and desktop
 - **Multi-language** — English and Indonesian (ID)
 - **Light / dark mode**
@@ -25,7 +30,7 @@ A full-stack bug report and feedback management platform built with Next.js 16. 
 | Database | MariaDB / MySQL |
 | Auth | JWT (jose) + bcryptjs, Google OAuth, GitHub OAuth |
 | Charts | Recharts |
-| Payments | Xendit |
+| Payments | Midtrans |
 | Deployment | Vercel |
 
 ## Getting Started
@@ -54,21 +59,28 @@ DATABASE_URL="mysql://user:password@localhost:3306/bug_report_manager"
 # Auth
 JWT_SECRET="your-secret-key"
 
+# Auth
+JWT_SECRET="change-this-in-production"
+NEXT_PUBLIC_BASE_URL="http://localhost:3000"
+
 # OAuth (optional)
 GOOGLE_CLIENT_ID=""
 GOOGLE_CLIENT_SECRET=""
 GITHUB_CLIENT_ID=""
 GITHUB_CLIENT_SECRET=""
 
-# Xendit (optional — required for billing)
-XENDIT_SECRET_KEY=""
-XENDIT_WEBHOOK_TOKEN=""
-XENDIT_PRO_PLAN_KEY=""
-XENDIT_BUSINESS_PLAN_KEY=""
+# Midtrans (optional — required for billing)
+MIDTRANS_SERVER_KEY="SB-Mid-server-..."
 
-# App
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-WHATSAPP_NUMBER="628xxxxxxxxxx"
+# SMTP — email notifications (optional; logs to console if not set)
+SMTP_HOST=""
+SMTP_PORT="587"
+SMTP_USER=""
+SMTP_PASS=""
+SMTP_FROM="BugReport Manager <noreply@example.com>"
+
+# WhatsApp for Enterprise plan
+NEXT_PUBLIC_WHATSAPP_NUMBER="628xxxxxxxxxx"
 ```
 
 ### 3. Run database migrations

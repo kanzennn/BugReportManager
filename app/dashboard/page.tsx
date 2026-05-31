@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { relativeTime } from '@/lib/utils'
 import { getLocale } from '@/lib/locale'
 import { createTranslator } from '@/lib/i18n'
+import { withCache } from '@/lib/cache'
 
 async function getDashboardData(userId: string, dateLocale: string) {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -54,7 +55,11 @@ export default async function DashboardPage() {
   const { userId } = await requireAuth()
   const locale = await getLocale()
   const t = createTranslator(locale)
-  const { totalApps, statusMap, chartData, recentBugs } = await getDashboardData(userId, locale)
+  const { totalApps, statusMap, chartData, recentBugs } = await withCache(
+    `user:${userId}:dashboard:${locale}`,
+    60,
+    () => getDashboardData(userId, locale),
+  )
 
   const totalBugs = Object.values(statusMap).reduce((a, b) => a + b, 0)
   const openBugs = statusMap.OPEN ?? 0

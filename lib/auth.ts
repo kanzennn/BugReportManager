@@ -1,6 +1,8 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { prisma } from '@/lib/db'
+import { withCache } from '@/lib/cache'
 
 const secret = new TextEncoder().encode(
   process.env.JWT_SECRET ?? 'fallback-secret-change-in-production-please'
@@ -45,5 +47,19 @@ export async function deleteSession() {
 export async function requireAuth() {
   const session = await getSession()
   if (!session) redirect('/login')
+
+  const isBanned = await withCache(`user:${session.userId}:banned`, 60, async () => {
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { bannedAt: true },
+    })
+    return !user || user.bannedAt !== null
+  })
+
+  if (isBanned) {
+    await deleteSession()
+    redirect('/login?flash=banned')
+  }
+
   return session
 }

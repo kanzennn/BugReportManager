@@ -125,8 +125,8 @@ export default async function LandingPage() {
             <div className="mb-6">
               <p className="text-sm font-medium text-zinc-400">Free</p>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-4xl font-bold text-zinc-100">$0</span>
-                <span className="text-zinc-500">/month</span>
+                <span className="text-4xl font-bold text-zinc-100">Rp 0</span>
+                <span className="text-zinc-500">/bulan</span>
               </div>
               <p className="mt-3 text-sm text-zinc-400">Perfect for side projects and small apps.</p>
             </div>
@@ -156,8 +156,8 @@ export default async function LandingPage() {
             <div className="mb-6">
               <p className="text-sm font-medium text-indigo-400">Pro</p>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-4xl font-bold text-zinc-100">$2</span>
-                <span className="text-zinc-500">/month</span>
+                <span className="text-4xl font-bold text-zinc-100">Rp 30.000</span>
+                <span className="text-zinc-500">/bulan</span>
               </div>
               <p className="mt-3 text-sm text-zinc-400">For developers with multiple projects.</p>
             </div>
@@ -182,8 +182,8 @@ export default async function LandingPage() {
             <div className="mb-6">
               <p className="text-sm font-medium text-zinc-400">Business</p>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-4xl font-bold text-zinc-100">$10</span>
-                <span className="text-zinc-500">/month</span>
+                <span className="text-4xl font-bold text-zinc-100">Rp 150.000</span>
+                <span className="text-zinc-500">/bulan</span>
               </div>
               <p className="mt-3 text-sm text-zinc-400">For teams that need collaboration.</p>
             </div>

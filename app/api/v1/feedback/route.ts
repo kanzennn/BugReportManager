@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { FeedbackType, FeedbackStatus } from '@prisma/client'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
 const feedbackSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255),
@@ -24,6 +25,10 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
   const apiKey = req.headers.get('x-api-key')
+  if (apiKey) {
+    const rl = rateLimit(`feedback:${apiKey}`, 30, 60_000)
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfter, cors)
+  }
   if (!apiKey) {
     return NextResponse.json({ error: 'Missing x-api-key header' }, { status: 401, headers: cors })
   }
@@ -67,6 +72,10 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const apiKey = req.headers.get('x-api-key')
+  if (apiKey) {
+    const rl = rateLimit(`get-feedback:${apiKey}`, 60, 60_000)
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfter, cors)
+  }
   if (!apiKey) {
     return NextResponse.json({ error: 'Missing x-api-key header' }, { status: 401, headers: cors })
   }

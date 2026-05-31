@@ -68,11 +68,19 @@ export default async function BugsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-zinc-100">{t('bugs.title')}</h1>
-        <p className="mt-1 text-sm text-zinc-400">
-          {total} {locale === 'id' ? 'laporan ditemukan' : `report${total !== 1 ? 's' : ''} found`}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-100">{t('bugs.title')}</h1>
+          <p className="mt-1 text-sm text-zinc-400">
+            {total} {locale === 'id' ? 'laporan ditemukan' : `report${total !== 1 ? 's' : ''} found`}
+          </p>
+        </div>
+        <a
+          href={`/api/export/bugs${sp.appId ? `?appId=${sp.appId}` : ''}`}
+          className="shrink-0 rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-400 transition-colors hover:border-zinc-500 hover:text-zinc-100"
+        >
+          Export CSV
+        </a>
       </div>
 
       <BugFilters apps={apps} />

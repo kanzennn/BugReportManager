@@ -1,6 +1,7 @@
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getAppRole } from '@/lib/access'
+import { withCache } from '@/lib/cache'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, BarChart2, Lock, Bug, CheckCircle, AlertCircle, Star } from 'lucide-react'
@@ -66,30 +67,35 @@ export default async function AppAnalyticsPage({
     )
   }
 
-  // --- Fetch analytics data ---
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-
-  const [totalBugs, bugsByStatus, bugsByPriority, recentBugs, allFeedback] = await Promise.all([
-    prisma.bugReport.count({ where: { applicationId: id } }),
-    prisma.bugReport.groupBy({
-      by: ['status'],
-      where: { applicationId: id },
-      _count: { _all: true },
-    }),
-    prisma.bugReport.groupBy({
-      by: ['priority'],
-      where: { applicationId: id },
-      _count: { _all: true },
-    }),
-    prisma.bugReport.findMany({
-      where: { applicationId: id, createdAt: { gte: thirtyDaysAgo } },
-      select: { createdAt: true, appVersion: true },
-    }),
-    prisma.feedback.findMany({
-      where: { applicationId: id },
-      select: { type: true, rating: true },
-    }),
-  ])
+  // --- Fetch analytics data (cached 5 min) ---
+  const [totalBugs, bugsByStatus, bugsByPriority, recentBugs, allFeedback] = await withCache(
+    `app:${id}:analytics`,
+    300,
+    async () => {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      return Promise.all([
+        prisma.bugReport.count({ where: { applicationId: id } }),
+        prisma.bugReport.groupBy({
+          by: ['status'],
+          where: { applicationId: id },
+          _count: { _all: true },
+        }),
+        prisma.bugReport.groupBy({
+          by: ['priority'],
+          where: { applicationId: id },
+          _count: { _all: true },
+        }),
+        prisma.bugReport.findMany({
+          where: { applicationId: id, createdAt: { gte: thirtyDaysAgo } },
+          select: { createdAt: true, appVersion: true },
+        }),
+        prisma.feedback.findMany({
+          where: { applicationId: id },
+          select: { type: true, rating: true },
+        }),
+      ])
+    },
+  )
 
   // 30-day bug timeline
   const dayMap: Record<string, number> = {}

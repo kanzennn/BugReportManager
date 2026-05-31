@@ -5,6 +5,11 @@ import { useSearchParams } from 'next/navigation'
 import { loginAction } from '@/app/actions/auth'
 import Link from 'next/link'
 
+const FLASH_MESSAGES: Record<string, { msg: string; type: 'success' | 'info' }> = {
+  'password-reset': { msg: 'Password updated. You can now sign in.', type: 'success' },
+  'logged-out': { msg: 'You have been signed out.', type: 'info' },
+}
+
 const OAUTH_ERRORS: Record<string, string> = {
   oauth_cancelled: 'Sign-in was cancelled.',
   oauth_failed: 'Social sign-in failed. Please try again.',
@@ -36,11 +41,14 @@ export function LoginForm() {
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') ?? ''
   const oauthError = searchParams.get('error')
+  const flash = searchParams.get('flash')
   const [oauthErrMsg, setOauthErrMsg] = useState<string | null>(null)
 
   useEffect(() => {
     if (oauthError) setOauthErrMsg(OAUTH_ERRORS[oauthError] ?? 'Sign-in failed. Please try again.')
   }, [oauthError])
+
+  const flashInfo = flash ? FLASH_MESSAGES[flash] : null
 
   return (
     <>
@@ -69,6 +77,11 @@ export function LoginForm() {
       </div>
 
       <form action={action} className="space-y-4">
+        {flashInfo && (
+          <div className={`rounded-lg border px-4 py-3 text-sm ${flashInfo.type === 'success' ? 'border-green-500/20 bg-green-500/10 text-green-400' : 'border-zinc-700 bg-zinc-800 text-zinc-300'}`}>
+            {flashInfo.msg}
+          </div>
+        )}
         {(state?.error || oauthErrMsg) && (
           <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
             {state?.error ?? oauthErrMsg}
@@ -86,9 +99,10 @@ export function LoginForm() {
           />
         </div>
         <div>
-          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-zinc-300">
-            Password
-          </label>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label htmlFor="password" className="text-sm font-medium text-zinc-300">Password</label>
+            <Link href="/forgot-password" className="text-xs text-indigo-400 hover:text-indigo-300">Forgot password?</Link>
+          </div>
           <input
             id="password" name="password" type="password" required autoComplete="current-password"
             placeholder="••••••••"

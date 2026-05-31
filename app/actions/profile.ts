@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { uploadToS3, deleteFromS3 } from '@/lib/s3'
+import { cacheDel } from '@/lib/cache'
 
 type State = { error?: string; success?: string } | null
 
@@ -18,6 +19,7 @@ export async function updateProfileAction(_: State, formData: FormData): Promise
   if (name.length > 100) return { error: 'Name must be 100 characters or fewer.' }
 
   await prisma.user.update({ where: { id: userId }, data: { name } })
+  await cacheDel(`user:${userId}:profile`)
   revalidatePath('/dashboard/profile')
   revalidatePath('/dashboard')
   return { success: 'Profile updated.' }
@@ -75,6 +77,7 @@ export async function uploadAvatarAction(_: State, formData: FormData): Promise<
   }
 
   await prisma.user.update({ where: { id: userId }, data: { avatarUrl: url } })
+  await cacheDel(`user:${userId}:profile`)
   revalidatePath('/dashboard/profile')
   revalidatePath('/dashboard')
   return { success: 'Profile picture updated.' }
@@ -96,6 +99,7 @@ export async function removeAvatarAction(): Promise<void> {
   }
 
   await prisma.user.update({ where: { id: userId }, data: { avatarUrl: null } })
+  await cacheDel(`user:${userId}:profile`)
   revalidatePath('/dashboard/profile')
   revalidatePath('/dashboard')
 }

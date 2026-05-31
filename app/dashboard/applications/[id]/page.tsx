@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db'
 import { getAppRole, isOwner as checkOwner, ROLE_LABELS } from '@/lib/access'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Globe, Smartphone, Laptop2, Pencil, Trash2, Users, MessageSquare, Bug, BarChart2 } from 'lucide-react'
+import { ArrowLeft, Globe, Smartphone, Laptop2, Pencil, Trash2, Users, MessageSquare, Bug, BarChart2, Plug } from 'lucide-react'
 import { ApiKeyCard } from '@/components/applications/api-key-card'
 import { ApiDocs } from '@/components/applications/api-docs'
 import { MembersList } from '@/components/applications/members-list'
@@ -103,6 +103,15 @@ export default async function ApplicationDetailPage({
               <BarChart2 className="h-3.5 w-3.5" />
               <span>Analytics</span>
             </Link>
+            {owner && (
+              <Link
+                href={`/dashboard/applications/${app.id}/integrations`}
+                className="flex items-center gap-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-600 hover:text-zinc-100"
+              >
+                <Plug className="h-3.5 w-3.5" />
+                <span>Integrations</span>
+              </Link>
+            )}
             {owner && (
               <>
                 <Link

@@ -8,6 +8,7 @@ import { StatusUpdate } from '@/components/bugs/status-update'
 import { deleteBugAction } from '@/app/actions/bugs'
 import { ConfirmButton } from '@/components/ui/confirm-button'
 import { formatDateTime } from '@/lib/utils'
+import { TrelloButton } from './trello-button'
 
 export default async function BugDetailPage({
   params,
@@ -18,8 +19,15 @@ export default async function BugDetailPage({
   const { userId } = await requireAuth()
 
   const bug = await prisma.bugReport.findFirst({
-    where: { id, application: { userId } },
-    include: { application: { select: { id: true, name: true } } },
+    where: {
+      id,
+      application: { OR: [{ userId }, { members: { some: { userId } } }] },
+    },
+    include: {
+      application: {
+        select: { id: true, name: true, trelloListId: true, userId: true },
+      },
+    },
   })
 
   if (!bug) notFound()
@@ -122,6 +130,21 @@ export default async function BugDetailPage({
           )}
         </dl>
       </div>
+
+      {/* Trello */}
+      {bug.application.trelloListId && (
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-zinc-100">Trello</p>
+              <p className="mt-0.5 text-xs text-zinc-500">
+                {bug.trelloCardUrl ? 'This bug has been pushed to Trello.' : 'Push this bug as a Trello card.'}
+              </p>
+            </div>
+            <TrelloButton bugId={bug.id} trelloCardUrl={bug.trelloCardUrl ?? null} />
+          </div>
+        </div>
+      )}
 
       {/* Stack Trace */}
       {bug.stackTrace && (

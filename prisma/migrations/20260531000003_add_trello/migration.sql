@@ -1,0 +1,9 @@
+ALTER TABLE `Application`
+  ADD COLUMN `trelloToken` LONGTEXT NULL,
+  ADD COLUMN `trelloBoardId` VARCHAR(191) NULL,
+  ADD COLUMN `trelloBoardName` VARCHAR(191) NULL,
+  ADD COLUMN `trelloListId` VARCHAR(191) NULL,
+  ADD COLUMN `trelloListName` VARCHAR(191) NULL;
+
+ALTER TABLE `BugReport`
+  ADD COLUMN `trelloCardUrl` VARCHAR(512) NULL;

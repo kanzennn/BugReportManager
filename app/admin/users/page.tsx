@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db'
+import Link from 'next/link'
 
 const PLAN_BADGE: Record<string, string> = {
   FREE: 'bg-zinc-700 text-zinc-300',
@@ -27,9 +28,9 @@ export default async function AdminUsersPage({
         name: true,
         email: true,
         plan: true,
-        subscriptionStatus: true,
         createdAt: true,
         isAdmin: true,
+        bannedAt: true,
         _count: { select: { applications: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -48,7 +49,6 @@ export default async function AdminUsersPage({
           <h1 className="text-2xl font-bold text-zinc-100">Users</h1>
           <p className="mt-1 text-sm text-zinc-400">{total} total users</p>
         </div>
-        {/* Plan filter */}
         <div className="flex gap-2">
           {['', 'FREE', 'PRO', 'BUSINESS'].map((p) => (
             <a
@@ -70,7 +70,7 @@ export default async function AdminUsersPage({
         <table className="w-full text-sm">
           <thead className="border-b border-zinc-800 bg-zinc-900">
             <tr>
-              {['Name', 'Email', 'Plan', 'Apps', 'Joined', 'Admin'].map((h) => (
+              {['Name', 'Email', 'Plan', 'Apps', 'Joined', 'Role', ''].map((h) => (
                 <th key={h} className="px-4 py-3 text-left font-medium text-zinc-400">{h}</th>
               ))}
             </tr>
@@ -78,7 +78,14 @@ export default async function AdminUsersPage({
           <tbody className="divide-y divide-zinc-800">
             {users.map((u) => (
               <tr key={u.id} className="hover:bg-zinc-900/50 transition-colors">
-                <td className="px-4 py-3 text-zinc-100 font-medium">{u.name}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-zinc-100">{u.name}</span>
+                    {u.bannedAt && (
+                      <span className="rounded-full bg-red-600/20 px-2 py-0.5 text-xs text-red-400">Banned</span>
+                    )}
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-zinc-400">{u.email}</td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${PLAN_BADGE[u.plan]}`}>
@@ -89,8 +96,16 @@ export default async function AdminUsersPage({
                 <td className="px-4 py-3 text-zinc-500 text-xs">
                   {u.createdAt.toLocaleDateString()}
                 </td>
-                <td className="px-4 py-3 text-xs text-zinc-500">
-                  {u.isAdmin ? <span className="text-indigo-400">Admin</span> : '—'}
+                <td className="px-4 py-3 text-xs">
+                  {u.isAdmin ? <span className="text-indigo-400">Admin</span> : <span className="text-zinc-500">User</span>}
+                </td>
+                <td className="px-4 py-3">
+                  <Link
+                    href={`/admin/users/${u.id}`}
+                    className="text-xs text-zinc-400 hover:text-zinc-100 transition-colors"
+                  >
+                    Edit →
+                  </Link>
                 </td>
               </tr>
             ))}
@@ -98,12 +113,9 @@ export default async function AdminUsersPage({
         </table>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-zinc-500">
-            Page {page} of {totalPages}
-          </p>
+          <p className="text-sm text-zinc-500">Page {page} of {totalPages}</p>
           <div className="flex gap-2">
             {page > 1 && (
               <a

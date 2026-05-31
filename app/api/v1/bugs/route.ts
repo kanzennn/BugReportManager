@@ -1,11 +1,16 @@
 import { prisma } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 import { BugStatus, Priority } from '@prisma/client'
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
 export async function GET(req: NextRequest) {
   const cors = { 'Access-Control-Allow-Origin': '*' }
 
   const apiKey = req.headers.get('x-api-key')
+  if (apiKey) {
+    const rl = rateLimit(`bugs:${apiKey}`, 60, 60_000)
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfter, cors)
+  }
   if (!apiKey) {
     return NextResponse.json({ error: 'Missing x-api-key header' }, { status: 401, headers: cors })
   }

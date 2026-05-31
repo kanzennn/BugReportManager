@@ -61,7 +61,7 @@ export function BillingClient({ currentPlan, subscriptionStatus, hasActiveSubscr
   async function handleUpgrade(planKey: string) {
     setLoading(planKey)
     try {
-      const res = await fetch('/api/xendit/checkout', {
+      const res = await fetch('/api/midtrans/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: planKey }),
@@ -76,7 +76,7 @@ export function BillingClient({ currentPlan, subscriptionStatus, hasActiveSubscr
   async function handleCancel() {
     setLoading('cancel')
     try {
-      await fetch('/api/xendit/cancel', { method: 'POST' })
+      await fetch('/api/midtrans/cancel', { method: 'POST' })
       window.location.reload()
     } finally {
       setLoading(null)

@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { AppType } from '@prisma/client'
+import { cacheDel } from '@/lib/cache'
 
 const appSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -41,6 +42,7 @@ export async function createApplicationAction(
     data: { ...parsed.data, userId: session.userId, apiKey: generateApiKey() },
   })
 
+  await cacheDel(`user:${session.userId}:apps`)
   redirect(`/dashboard/applications/${app.id}?flash=app-created`)
 }
 
@@ -61,6 +63,7 @@ export async function updateApplicationAction(
   if (!app) return { error: 'Application not found' }
 
   await prisma.application.update({ where: { id }, data: parsed.data })
+  await cacheDel(`user:${session.userId}:apps`)
   revalidatePath(`/dashboard/applications/${id}`)
   redirect(`/dashboard/applications/${id}?flash=app-updated`)
 }
@@ -68,6 +71,12 @@ export async function updateApplicationAction(
 export async function deleteApplicationAction(id: string) {
   const session = await requireAuth()
   await prisma.application.deleteMany({ where: { id, userId: session.userId } })
+  await cacheDel(
+    `user:${session.userId}:apps`,
+    `user:${session.userId}:dashboard:en`,
+    `user:${session.userId}:dashboard:id`,
+    `app:${id}:analytics`,
+  )
   revalidatePath('/dashboard/applications')
   redirect('/dashboard/applications?flash=app-deleted')
 }

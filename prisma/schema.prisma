@@ -15,9 +15,12 @@ model User {
   lastSeenAt             DateTime?
   locale                 String              @default("en")
   plan                   Plan                @default(FREE)
-  xenditCustomerId       String?             @unique
-  xenditSubscriptionId   String?             @unique
+  midtransSubscriptionId String?             @unique
   subscriptionStatus     SubscriptionStatus  @default(INACTIVE)
+  bannedAt               DateTime?
+
+  resetToken             String?             @unique
+  resetTokenExpiresAt    DateTime?
   isAdmin                Boolean             @default(false)
   applications           Application[]
   oauthAccounts          OAuthAccount[]
@@ -45,8 +48,13 @@ model Application {
   name        String
   type        AppType
   description String?             @db.Text
-  apiKey      String              @unique
-  userId      String
+  apiKey          String              @unique
+  userId          String
+  trelloToken     String?             @db.Text
+  trelloBoardId   String?
+  trelloBoardName String?
+  trelloListId    String?
+  trelloListName  String?
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   bugs        BugReport[]
   feedback    Feedback[]
@@ -102,6 +110,7 @@ model BugReport {
   deviceInfo    String?
   stackTrace    String?     @db.Text
   reporterEmail String?
+  trelloCardUrl String?
   applicationId String
   application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   createdAt     DateTime    @default(now())

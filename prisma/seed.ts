@@ -382,7 +382,7 @@ async function main() {
         currency: 'usd',
         status: 'SUCCEEDED',
         plan: 'PRO',
-        paymentId: 'xendit_pay_seed_001',
+        paymentId: 'midtrans_pay_seed_001',
         createdAt: new Date('2026-04-01'),
       },
       {
@@ -391,7 +391,7 @@ async function main() {
         currency: 'usd',
         status: 'SUCCEEDED',
         plan: 'PRO',
-        paymentId: 'xendit_pay_seed_002',
+        paymentId: 'midtrans_pay_seed_002',
         createdAt: new Date('2026-05-01'),
       },
     ],
