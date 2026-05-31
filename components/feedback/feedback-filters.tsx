@@ -43,10 +43,10 @@ export function FeedbackFilters({ apps }: { apps: App[] }) {
         />
       </form>
 
-      <div className="flex gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 p-1 text-center">
+      <div className="flex gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 p-1">
         <Link
           href={buildUrl({ status: undefined })}
-          className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${!currentStatus ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'}`}
+          className={`inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors ${!currentStatus ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'}`}
         >
           {t('filters.all')}
         </Link>
@@ -54,7 +54,7 @@ export function FeedbackFilters({ apps }: { apps: App[] }) {
           <Link
             key={s}
             href={buildUrl({ status: s })}
-            className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${currentStatus === s ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'}`}
+            className={`inline-flex items-center justify-center rounded-md px-3 py-1 text-xs font-medium transition-colors ${currentStatus === s ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'}`}
           >
             {t(`feedbackStatus.${s}`)}
           </Link>
