@@ -77,16 +77,6 @@ export function Sidebar({ userName, avatarUrl, ownedApps, isAdmin }: SidebarProp
         />
       )}
 
-      {/* ── Nav progress bar ── */}
-      {isNavigating && (
-        <div className="fixed top-0 left-0 right-0 z-[9999] h-[2px] overflow-hidden bg-indigo-950">
-          <div
-            className="h-full w-2/5 rounded-full bg-indigo-500"
-            style={{ animation: 'nav-progress 0.9s ease-in-out infinite' }}
-          />
-        </div>
-      )}
-
       {/* ── Sidebar drawer ── */}
       <aside
         className={cn(
