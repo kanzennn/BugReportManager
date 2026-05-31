@@ -68,16 +68,8 @@ export default function TermsPage() {
               <p>
                 All payments for paid plans are processed through <strong className="text-zinc-100">Midtrans</strong>,
                 a licensed payment service provider in Indonesia operated by PT Midtrans (a Gojek company). By
-                subscribing to a paid plan, you also agree to{' '}
-                <a
-                  href="/midtrans-tnc.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-400 hover:text-indigo-300"
-                >
-                  Midtrans Terms and Conditions
-                </a>
-                .
+                subscribing to a paid plan, you also agree to Midtrans&apos; Terms and Conditions as published on
+                their official website.
               </p>
               <p>
                 When you provide payment information, you authorize {COMPANY} and Midtrans to charge your selected
@@ -223,7 +215,6 @@ export default function TermsPage() {
 
         <div className="mt-12 border-t border-zinc-800 pt-6 flex flex-wrap gap-4 text-sm text-zinc-500">
           <Link href="/privacy" className="hover:text-zinc-300">Privacy Policy</Link>
-          <a href="/midtrans-tnc.pdf" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-300">Midtrans T&amp;C (PDF)</a>
           <Link href="/" className="hover:text-zinc-300">Back to home</Link>
         </div>
       </div>

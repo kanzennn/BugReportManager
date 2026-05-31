@@ -72,11 +72,8 @@ export default function PrivacyPage() {
                 store your subscription status, plan type, and a Midtrans subscription reference ID.
               </p>
               <p>
-                Midtrans&apos; handling of your payment data is governed by the{' '}
-                <a href="/midtrans-tnc.pdf" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300">
-                  Midtrans Terms and Conditions
-                </a>{' '}
-                and their own privacy policy.
+                Midtrans&apos; handling of your payment data is governed by Midtrans&apos; Terms and Conditions
+                and their own privacy policy, available on their official website.
               </p>
             </SubSection>
 
@@ -243,7 +240,6 @@ export default function PrivacyPage() {
 
         <div className="mt-12 border-t border-zinc-800 pt-6 flex flex-wrap gap-4 text-sm text-zinc-500">
           <Link href="/terms" className="hover:text-zinc-300">Terms and Conditions</Link>
-          <a href="/midtrans-tnc.pdf" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-300">Midtrans T&amp;C (PDF)</a>
           <Link href="/" className="hover:text-zinc-300">Back to home</Link>
         </div>
       </div>
