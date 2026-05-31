@@ -72,7 +72,7 @@ export function FeedbackFilters({ apps }: { apps: App[] }) {
         ))}
       </select>
 
-      {apps.length > 1 && (
+      {apps.length > 0 && (
         <select
           value={currentAppId ?? ''}
           onChange={(e) => router.push(buildUrl({ appId: e.target.value || undefined }))}
