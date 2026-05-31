@@ -19,6 +19,10 @@ model User {
   subscriptionStatus     SubscriptionStatus  @default(INACTIVE)
   bannedAt               DateTime?
 
+  agreedToTermsAt        DateTime?
+  heardFrom              String?
+  userType               String?
+
   resetToken             String?             @unique
   resetTokenExpiresAt    DateTime?
   isAdmin                Boolean             @default(false)

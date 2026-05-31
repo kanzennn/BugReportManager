@@ -21,11 +21,17 @@ const loginSchema = z.object({
   redirectTo: z.string().optional(),
 })
 
+const HEARD_FROM_OPTIONS = ['search', 'social', 'friend', 'youtube', 'github', 'other'] as const
+const USER_TYPE_OPTIONS = ['student', 'developer', 'freelancer', 'company', 'other'] as const
+
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   redirectTo: z.string().optional(),
+  terms: z.literal('on', { errorMap: () => ({ message: 'You must accept the Terms and Conditions.' }) }),
+  heardFrom: z.enum(HEARD_FROM_OPTIONS, { errorMap: () => ({ message: 'Please select how you heard about us.' }) }),
+  userType: z.enum(USER_TYPE_OPTIONS, { errorMap: () => ({ message: 'Please select your role.' }) }),
 })
 
 type ActionState = { error: string } | null
@@ -76,6 +82,9 @@ export async function registerAction(_: ActionState, formData: FormData): Promis
     email: formData.get('email'),
     password: formData.get('password'),
     redirectTo: formData.get('redirectTo'),
+    terms: formData.get('terms'),
+    heardFrom: formData.get('heardFrom'),
+    userType: formData.get('userType'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
@@ -84,7 +93,14 @@ export async function registerAction(_: ActionState, formData: FormData): Promis
 
   const hashed = await bcrypt.hash(parsed.data.password, 12)
   const user = await prisma.user.create({
-    data: { name: parsed.data.name, email: parsed.data.email, password: hashed },
+    data: {
+      name: parsed.data.name,
+      email: parsed.data.email,
+      password: hashed,
+      agreedToTermsAt: new Date(),
+      heardFrom: parsed.data.heardFrom,
+      userType: parsed.data.userType,
+    },
   })
 
   await createSession(user.id)

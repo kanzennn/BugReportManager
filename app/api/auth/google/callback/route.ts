@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${base()}/login?error=oauth_no_email`)
   }
 
-  const user = await findOrCreateOAuthUser({
+  const { user } = await findOrCreateOAuthUser({
     provider: 'google',
     providerId: profile.id,
     email: profile.email,
@@ -60,5 +60,6 @@ export async function GET(req: NextRequest) {
   })
 
   await createSession(user.id)
-  return NextResponse.redirect(`${base()}/dashboard`)
+  const dest = user.agreedToTermsAt ? `${base()}/dashboard` : `${base()}/onboarding`
+  return NextResponse.redirect(dest)
 }

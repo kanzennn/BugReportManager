@@ -53,6 +53,15 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--color-zinc-400); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-zinc-500, oklch(0.552 0.016 285.938)); }
 
+/* Legal pages (terms / privacy) — minimal prose styles */
+.prose-legal ul { list-style: disc; padding-left: 1.5rem; space-y: 0.25rem; }
+.prose-legal ul li { margin-top: 0.25rem; }
+.prose-legal table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+.prose-legal table th,
+.prose-legal table td { border: 1px solid var(--color-zinc-700); padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
+.prose-legal table th { background: var(--color-zinc-800); color: var(--color-zinc-200); font-weight: 600; }
+.prose-legal code { font-family: var(--font-mono); font-size: 0.8125rem; background: var(--color-zinc-800); padding: 0.1rem 0.35rem; border-radius: 0.25rem; }
+
 @media print {
   /* Preserve background colors (chart fills, badge backgrounds, stat card icons) */
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }

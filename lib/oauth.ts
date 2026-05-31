@@ -36,13 +36,13 @@ export async function findOrCreateOAuthUser({
   providerId: string
   email: string
   name: string
-}) {
+}): Promise<{ user: Awaited<ReturnType<typeof prisma.user.findUniqueOrThrow>>; isNew: boolean }> {
   // Existing OAuth account → return its user
   const existing = await prisma.oAuthAccount.findUnique({
     where: { provider_providerId: { provider, providerId } },
     include: { user: true },
   })
-  if (existing) return existing.user
+  if (existing) return { user: existing.user, isNew: false }
 
   // Existing user with matching email → link and return
   const existingUser = await prisma.user.findUnique({ where: { email } })
@@ -50,15 +50,16 @@ export async function findOrCreateOAuthUser({
     await prisma.oAuthAccount.create({
       data: { provider, providerId, userId: existingUser.id },
     })
-    return existingUser
+    return { user: existingUser, isNew: false }
   }
 
   // Brand-new user
-  return prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       email,
       name,
       oauthAccounts: { create: { provider, providerId } },
     },
   })
+  return { user, isNew: true }
 }

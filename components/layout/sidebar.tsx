@@ -178,8 +178,8 @@ export function Sidebar({ userName, avatarUrl, ownedApps, isAdmin }: SidebarProp
             )}
           >
             {pendingHref === '/dashboard/settings'
-              ? <Loader2 className="h-4 w-4 animate-spin" />
-              : <Settings2 className="h-4 w-4" />}
+              ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+              : <Settings2 className="h-4 w-4 shrink-0" />}
             {t('nav.settings')}
           </Link>
           <Link
@@ -213,7 +213,7 @@ export function Sidebar({ userName, avatarUrl, ownedApps, isAdmin }: SidebarProp
               type="submit"
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4 shrink-0" />
               {t('nav.signOut')}
             </button>
           </form>
