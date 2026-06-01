@@ -148,6 +148,101 @@ export async function sendPasswordResetEmail({ to, resetToken }: { to: string; r
   })
 }
 
+export async function sendVerificationEmail({ to, verifyToken }: { to: string; verifyToken: string }): Promise<void> {
+  const verifyLink = `${BASE_URL}/api/auth/verify-email?token=${verifyToken}`
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:#18181b;border:1px solid #27272a;border-radius:12px;overflow:hidden;">
+        <tr><td style="background:#4f46e5;padding:24px 32px;">
+          <p style="margin:0;font-size:20px;font-weight:700;color:#fff;">BugReport Manager</p>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:18px;font-weight:600;color:#f4f4f5;">Verify your email address</h2>
+          <p style="margin:0 0 24px;font-size:14px;color:#a1a1aa;">
+            Click the button below to verify your email address. This link expires in <strong style="color:#d4d4d8;">24 hours</strong>.
+          </p>
+          <a href="${verifyLink}"
+             style="display:inline-block;background:#4f46e5;color:#fff;font-size:14px;font-weight:600;padding:12px 24px;border-radius:8px;text-decoration:none;">
+            Verify email address →
+          </a>
+          <p style="margin:24px 0 0;font-size:12px;color:#52525b;">
+            If you did not create an account, you can safely ignore this email.
+          </p>
+          <p style="margin:8px 0 0;font-size:12px;color:#3f3f46;word-break:break-all;">${verifyLink}</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  if (!isConfigured()) {
+    console.log(`\n[DEV] Email verification (SMTP not configured)\nTo: ${to}\nLink: ${verifyLink}\n`)
+    return
+  }
+
+  await createTransport().sendMail({
+    from: process.env.SMTP_FROM ?? `"BugReport Manager" <${process.env.SMTP_USER}>`,
+    to,
+    subject: 'Verify your BugReport Manager email address',
+    html,
+  })
+}
+
+export async function sendDeleteConfirmationEmail({ to, deleteToken }: { to: string; deleteToken: string }): Promise<void> {
+  const confirmLink = `${BASE_URL}/api/auth/confirm-delete?token=${deleteToken}`
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:#18181b;border:1px solid #27272a;border-radius:12px;overflow:hidden;">
+        <tr><td style="background:#dc2626;padding:24px 32px;">
+          <p style="margin:0;font-size:20px;font-weight:700;color:#fff;">BugReport Manager</p>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          <h2 style="margin:0 0 8px;font-size:18px;font-weight:600;color:#f4f4f5;">Confirm account deletion</h2>
+          <p style="margin:0 0 8px;font-size:14px;color:#a1a1aa;">
+            You requested to delete your account. Your account is scheduled for permanent deletion in <strong style="color:#d4d4d8;">30 days</strong>.
+          </p>
+          <p style="margin:0 0 24px;font-size:14px;color:#a1a1aa;">
+            Click the button below to <strong style="color:#f87171;">immediately and permanently</strong> delete all your data. This action cannot be undone.
+          </p>
+          <a href="${confirmLink}"
+             style="display:inline-block;background:#dc2626;color:#fff;font-size:14px;font-weight:600;padding:12px 24px;border-radius:8px;text-decoration:none;">
+            Permanently delete my account →
+          </a>
+          <p style="margin:24px 0 0;font-size:12px;color:#52525b;">
+            If you did not request account deletion, you can ignore this email. You can also cancel deletion from your dashboard.
+          </p>
+          <p style="margin:8px 0 0;font-size:12px;color:#3f3f46;word-break:break-all;">${confirmLink}</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  if (!isConfigured()) {
+    console.log(`\n[DEV] Delete confirmation email (SMTP not configured)\nTo: ${to}\nLink: ${confirmLink}\n`)
+    return
+  }
+
+  await createTransport().sendMail({
+    from: process.env.SMTP_FROM ?? `"BugReport Manager" <${process.env.SMTP_USER}>`,
+    to,
+    subject: 'Confirm your BugReport Manager account deletion',
+    html,
+  })
+}
+
 export async function sendBugStatusEmail({
   to,
   bugTitle,

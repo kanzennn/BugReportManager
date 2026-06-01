@@ -6,10 +6,12 @@ import { Heartbeat } from '@/components/layout/heartbeat'
 import { LanguageProvider } from '@/components/language-provider'
 import { TourOverlay } from '@/components/tour/tour-overlay'
 import { getLocale } from '@/lib/locale'
+import { EmailVerificationBanner } from '@/components/dashboard/email-verification-banner'
+import { PendingDeletionBanner } from '@/components/dashboard/pending-deletion-banner'
 import type { Locale } from '@/lib/i18n'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { userId } = await requireAuth()
+  const { userId, emailVerified, pendingDeletion } = await requireAuth()
 
   const [user, ownedApps, locale] = await Promise.all([
     withCache(`user:${userId}:profile`, 120, () =>
@@ -45,6 +47,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
         />
         <TourOverlay tourCompleted={!!user?.tourCompletedAt} />
         <div className="flex-1 pl-0 md:pl-60 print:pl-0">
+          {!emailVerified && (
+            <EmailVerificationBanner />
+          )}
+          {pendingDeletion && (
+            <PendingDeletionBanner />
+          )}
           <main className="p-4 pt-[72px] md:p-8 md:pt-8">{children}</main>
         </div>
       </div>

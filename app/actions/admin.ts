@@ -1,6 +1,6 @@
 'use server'
 
-import { requireAuth } from '@/lib/auth'
+import { requireAuth, revokeSessionByUserId } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { Plan } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
@@ -42,5 +42,11 @@ export async function banUserAction(targetUserId: string, ban: boolean) {
   })
 
   await cacheDel(`user:${targetUserId}:banned`)
+
+  // Revoke active session in Redis so the ban takes effect immediately
+  if (ban) {
+    await revokeSessionByUserId(targetUserId)
+  }
+
   revalidatePath(`/admin/users/${targetUserId}`)
 }

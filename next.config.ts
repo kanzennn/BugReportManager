@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { withSentryConfig } from '@sentry/nextjs'
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -9,7 +10,7 @@ const CSP = [
   `script-src 'self' 'unsafe-inline'${isProd ? '' : " 'unsafe-eval'"} https://app.midtrans.com https://app.sandbox.midtrans.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://app.midtrans.com https://app.sandbox.midtrans.com",
+  "connect-src 'self' https://app.midtrans.com https://app.sandbox.midtrans.com https://*.sentry.io",
   "frame-src https://app.midtrans.com https://app.sandbox.midtrans.com",
   "frame-ancestors 'none'",
 ].join('; ')
@@ -51,4 +52,17 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withSentryConfig(nextConfig, {
+  // Sentry org and project for source map uploads
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Auth token for source map uploads (create at sentry.io → Settings → Auth Tokens)
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Suppress output (useful in CI)
+  silent: !process.env.CI,
+
+  // Upload source maps to Sentry (requires SENTRY_AUTH_TOKEN)
+  widenClientFileUpload: true,
+})

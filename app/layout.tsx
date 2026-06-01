@@ -3,8 +3,9 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { Analytics } from "@vercel/analytics/next"
 import { Providers } from '@/components/providers'
+import { CookieConsent } from '@/components/cookie-consent'
+import { ConditionalAnalytics } from '@/components/conditional-analytics'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
@@ -76,7 +77,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </Providers>
         <SpeedInsights />
-        <Analytics />
+        <ConditionalAnalytics />
+        <CookieConsent />
       </body>
     </html>
   )

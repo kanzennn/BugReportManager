@@ -12,12 +12,59 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 }
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://bugreportmanager.vercel.app'
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'BugReport',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Web',
+  description:
+    'Collect bug reports and user feedback from your mobile, web, and desktop apps via a simple REST API. Manage everything in one dashboard.',
+  url: siteUrl,
+  offers: [
+    {
+      '@type': 'Offer',
+      name: 'Free',
+      price: '0',
+      priceCurrency: 'IDR',
+      description: 'Up to 3 applications, unlimited bug reports and feedback.',
+    },
+    {
+      '@type': 'Offer',
+      name: 'Pro',
+      price: '30000',
+      priceCurrency: 'IDR',
+      description: 'Unlimited applications, advanced dashboard and charts.',
+    },
+    {
+      '@type': 'Offer',
+      name: 'Business',
+      price: '150000',
+      priceCurrency: 'IDR',
+      description: 'Everything in Pro plus team member invitations and role-based access control.',
+    },
+  ],
+  featureList: [
+    'Bug tracking via REST API',
+    'User feedback collection',
+    'Team collaboration with role-based access',
+    'Real-time dashboard',
+    'Trello integration',
+  ],
+}
+
 export default async function LandingPage() {
   const session = await getSession()
   if (session) redirect('/dashboard')
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -26,6 +73,12 @@ export default async function LandingPage() {
             <span className="font-semibold text-zinc-100">BugReport</span>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              href="/docs"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-400 transition-colors hover:text-zinc-100"
+            >
+              Docs
+            </Link>
             <Link
               href="/login"
               className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-400 transition-colors hover:text-zinc-100"
@@ -229,6 +282,14 @@ export default async function LandingPage() {
           <div className="flex items-center gap-2">
             <LogoIcon size={20} />
             <span className="text-sm text-zinc-500">BugReport</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="/docs" className="text-sm text-zinc-500 hover:text-zinc-400 transition-colors">
+              API Docs
+            </Link>
+            <Link href="/register" className="text-sm text-zinc-500 hover:text-zinc-400 transition-colors">
+              Get started
+            </Link>
           </div>
           <p className="text-sm text-zinc-600">
             © {new Date().getFullYear()} BugReport. All rights reserved.

@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, AppWindow, List, LogOut,
   MessageSquare, UserPlus, Users, Settings2, CreditCard, ShieldCheck, Loader2,
-  Menu, X, ChevronUp, User,
+  Menu, X, ChevronUp, User, BookOpen,
 } from 'lucide-react'
 import { LogoIcon } from '@/components/logo'
 import { logoutAction } from '@/app/actions/auth'
@@ -181,6 +181,16 @@ export function Sidebar({ userName, avatarUrl, ownedApps, isAdmin }: SidebarProp
 
         {/* Settings + Profile dropdown */}
         <div className={cn('p-3 space-y-1', ownedApps.length === 0 && !isAdmin ? 'border-t border-zinc-800' : '')}>
+          <Link
+            href="/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+          >
+            <BookOpen className="h-4 w-4 shrink-0" />
+            API Docs
+          </Link>
+
           <Link
             href="/dashboard/settings"
             onClick={() => handleNav('/dashboard/settings')}

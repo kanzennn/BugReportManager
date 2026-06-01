@@ -24,6 +24,14 @@ model User {
   userType               String?
   tourCompletedAt        DateTime?
 
+  emailVerified          Boolean             @default(false)
+  emailVerifyToken       String?             @unique
+  emailVerifyTokenExpiresAt DateTime?
+
+  deletedAt              DateTime?
+  deleteToken            String?             @unique
+  deleteTokenExpiresAt   DateTime?
+
   resetToken             String?             @unique
   resetTokenExpiresAt    DateTime?
   isAdmin                Boolean             @default(false)

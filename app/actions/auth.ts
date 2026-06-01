@@ -8,7 +8,8 @@ import { z } from 'zod'
 import { headers } from 'next/headers'
 import { rateLimit } from '@/lib/rate-limit'
 import { randomBytes } from 'crypto'
-import { sendPasswordResetEmail } from '@/lib/email'
+import { sendPasswordResetEmail, sendVerificationEmail } from '@/lib/email'
+import { requireAuth } from '@/lib/auth'
 
 async function getActionIp(): Promise<string> {
   const h = await headers()
@@ -110,6 +111,21 @@ export async function registerAction(_: ActionState, formData: FormData): Promis
     },
   })
 
+  // Generate email verification token
+  const verifyToken = randomBytes(32).toString('hex')
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      emailVerifyToken: verifyToken,
+      emailVerifyTokenExpiresAt: new Date(Date.now() + 24 * 60 * 60_000), // 24 hours
+    },
+  })
+  try {
+    await sendVerificationEmail({ to: user.email, verifyToken })
+  } catch (err) {
+    console.error('Verification email failed:', err)
+  }
+
   await createSession(user.id)
   const regDest = safeRedirect(parsed.data.redirectTo)
   redirect(regDest.includes('?') ? `${regDest}&flash=registered` : `${regDest}?flash=registered`)
@@ -185,4 +201,43 @@ export async function resetPasswordAction(_: ActionState, formData: FormData): P
   })
 
   redirect('/login?flash=password-reset')
+}
+
+type ResendState = { error: string } | { sent: true } | null
+
+export async function resendVerificationAction(_: ResendState, _formData: FormData): Promise<ResendState> {
+  const { userId } = await requireAuth()
+
+  const ip = await getActionIp()
+  const rl = await rateLimit(`resend-verify:${userId}`, 3, 60 * 60_000)
+  if (!rl.allowed) {
+    return { error: `Too many requests. Try again in ${rl.retryAfter} seconds.` }
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, emailVerified: true },
+  })
+
+  if (!user) return { error: 'User not found.' }
+  if (user.emailVerified) return { error: 'Email is already verified.' }
+  void ip // used for rate limiting above
+
+  const verifyToken = randomBytes(32).toString('hex')
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      emailVerifyToken: verifyToken,
+      emailVerifyTokenExpiresAt: new Date(Date.now() + 24 * 60 * 60_000),
+    },
+  })
+
+  try {
+    await sendVerificationEmail({ to: user.email, verifyToken })
+  } catch (err) {
+    console.error('Resend verification email failed:', err)
+    return { error: 'Failed to send email. Please try again.' }
+  }
+
+  return { sent: true }
 }

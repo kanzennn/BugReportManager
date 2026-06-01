@@ -8,6 +8,8 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { uploadToS3, deleteFromS3 } from '@/lib/s3'
 import { cacheDel } from '@/lib/cache'
+import { randomBytes } from 'crypto'
+import { sendDeleteConfirmationEmail } from '@/lib/email'
 
 type State = { error?: string; success?: string } | null
 
@@ -104,17 +106,41 @@ export async function removeAvatarAction(): Promise<void> {
   revalidatePath('/dashboard')
 }
 
-export async function deleteAccountAction() {
+export async function deleteAccountAction(): Promise<void> {
   const { userId } = await requireAuth()
 
-  // Remove avatar from S3 before deleting account
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { avatarUrl: true } })
-  if (user?.avatarUrl) {
-    const match = user.avatarUrl.match(/avatars\/[^/?]+/)
-    if (match) { try { await deleteFromS3(match[0]) } catch { /* ignore */ } }
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, deletedAt: true } })
+  if (!user || user.deletedAt) return
+
+  const deleteToken = randomBytes(32).toString('hex')
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      deletedAt: new Date(),
+      deleteToken,
+      deleteTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60_000), // 7 day link expiry
+    },
+  })
+
+  try {
+    await sendDeleteConfirmationEmail({ to: user.email, deleteToken })
+  } catch (err) {
+    console.error('Delete confirmation email failed:', err)
   }
 
-  await prisma.user.delete({ where: { id: userId } })
-  await deleteSession()
-  redirect('/register')
+  revalidatePath('/dashboard/profile')
+  revalidatePath('/dashboard')
+}
+
+export async function cancelDeletionAction(): Promise<State> {
+  const { userId } = await requireAuth()
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { deletedAt: null, deleteToken: null, deleteTokenExpiresAt: null },
+  })
+
+  revalidatePath('/dashboard/profile')
+  revalidatePath('/dashboard')
+  return { success: 'Account deletion cancelled. Your account is active again.' }
 }
