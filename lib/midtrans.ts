@@ -1,8 +1,8 @@
-import { createHash } from 'crypto'
+import { createHash, timingSafeEqual } from 'crypto'
 
 const SNAP_BASE_URL =
   process.env.NODE_ENV === 'production'
-    ? 'https://app.sandbox.midtrans.com'
+    ? 'https://app.midtrans.com'
     : 'https://app.sandbox.midtrans.com'
 
 function authHeader() {
@@ -70,7 +70,9 @@ export function verifyWebhookSignature(
   const expected = createHash('sha512')
     .update(`${orderId}${statusCode}${grossAmount}${process.env.MIDTRANS_SERVER_KEY!}`)
     .digest('hex')
-  return expected === signatureKey
+  const a = Buffer.from(expected)
+  const b = Buffer.from(signatureKey)
+  return a.length === b.length && timingSafeEqual(a, b)
 }
 
 export const PLANS = {

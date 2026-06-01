@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
 
   const apiKey = req.headers.get('x-api-key')
   if (apiKey) {
-    const rl = rateLimit(`bugs:${apiKey}`, 60, 60_000)
+    const rl = await rateLimit(`bugs:${apiKey}`, 60, 60_000)
     if (!rl.allowed) return rateLimitResponse(rl.retryAfter, cors)
   }
   if (!apiKey) {
@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
 
   const app = await prisma.application.findUnique({ where: { apiKey } })
   if (!app) {
+    console.warn('[security] invalid API key on GET /api/v1/bugs', { keyPrefix: apiKey.slice(0, 8) })
     return NextResponse.json({ error: 'Invalid API key' }, { status: 401, headers: cors })
   }
 

@@ -24,12 +24,14 @@ export async function POST(req: NextRequest) {
     body.signature_key,
   )
   if (!isValid) {
+    console.warn('[security] Midtrans webhook: invalid signature', { orderId: body.order_id })
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
   // order_id format: brm_{16-char userId prefix}_{PLAN}_{timestamp}
   const parts = body.order_id.split('_')
   if (parts[0] !== 'brm' || parts.length < 4) {
+    console.warn('[security] Midtrans webhook: unrecognised order_id format', { orderId: body.order_id })
     return NextResponse.json({ received: true })
   }
 
@@ -39,7 +41,10 @@ export async function POST(req: NextRequest) {
   if (!userIdPrefix || !(plan in Plan)) return NextResponse.json({ received: true })
 
   const user = await prisma.user.findFirst({ where: { id: { startsWith: userIdPrefix } } })
-  if (!user) return NextResponse.json({ received: true })
+  if (!user) {
+    console.warn('[security] Midtrans webhook: no user matched order', { orderId: body.order_id })
+    return NextResponse.json({ received: true })
+  }
   const userId = user.id
 
   const isSuccess =

@@ -12,7 +12,7 @@ export async function POST(
     const { id } = await params
     const { userId } = await requireAuth()
 
-    const rl = rateLimit(`regen:${userId}`, 5, 60 * 60_000)
+    const rl = await rateLimit(`regen:${userId}`, 5, 60 * 60_000)
     if (!rl.allowed) return rateLimitResponse(rl.retryAfter)
 
     const app = await prisma.application.findFirst({ where: { id, userId } })

@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const rl = rateLimit(`checkout:${session.userId}`, 10, 60 * 60_000)
+  const rl = await rateLimit(`checkout:${session.userId}`, 10, 60 * 60_000)
   if (!rl.allowed) return rateLimitResponse(rl.retryAfter)
 
   const { plan } = await req.json() as { plan: 'PRO' | 'BUSINESS' }

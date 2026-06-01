@@ -4,9 +4,11 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { withCache } from '@/lib/cache'
 
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? 'fallback-secret-change-in-production-please'
-)
+const secretValue = process.env.JWT_SECRET
+if (!secretValue || secretValue.length < 32) {
+  throw new Error('JWT_SECRET must be set to a random string of at least 32 characters')
+}
+const secret = new TextEncoder().encode(secretValue)
 
 const COOKIE = 'brm_session'
 
@@ -32,7 +34,7 @@ export async function getSession(): Promise<{ userId: string } | null> {
     const store = await cookies()
     const token = store.get(COOKIE)?.value
     if (!token) return null
-    const { payload } = await jwtVerify(token, secret)
+    const { payload } = await jwtVerify(token, secret, { algorithms: ['HS256'] })
     return { userId: payload.userId as string }
   } catch {
     return null

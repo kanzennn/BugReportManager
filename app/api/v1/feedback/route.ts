@@ -26,7 +26,7 @@ export async function OPTIONS() {
 export async function POST(req: NextRequest) {
   const apiKey = req.headers.get('x-api-key')
   if (apiKey) {
-    const rl = rateLimit(`feedback:${apiKey}`, 30, 60_000)
+    const rl = await rateLimit(`feedback:${apiKey}`, 30, 60_000)
     if (!rl.allowed) return rateLimitResponse(rl.retryAfter, cors)
   }
   if (!apiKey) {
@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
 
   const app = await prisma.application.findUnique({ where: { apiKey } })
   if (!app) {
+    console.warn('[security] invalid API key on POST /api/v1/feedback', { keyPrefix: apiKey.slice(0, 8) })
     return NextResponse.json({ error: 'Invalid API key' }, { status: 401, headers: cors })
   }
 
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const apiKey = req.headers.get('x-api-key')
   if (apiKey) {
-    const rl = rateLimit(`get-feedback:${apiKey}`, 60, 60_000)
+    const rl = await rateLimit(`get-feedback:${apiKey}`, 60, 60_000)
     if (!rl.allowed) return rateLimitResponse(rl.retryAfter, cors)
   }
   if (!apiKey) {
@@ -82,6 +83,7 @@ export async function GET(req: NextRequest) {
 
   const app = await prisma.application.findUnique({ where: { apiKey } })
   if (!app) {
+    console.warn('[security] invalid API key on GET /api/v1/feedback', { keyPrefix: apiKey.slice(0, 8) })
     return NextResponse.json({ error: 'Invalid API key' }, { status: 401, headers: cors })
   }
 

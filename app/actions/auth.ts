@@ -43,9 +43,9 @@ function safeRedirect(url: string | undefined): string {
 
 export async function loginAction(_: ActionState, formData: FormData): Promise<ActionState> {
   const ip = await getActionIp()
-  const rl = rateLimit(`login:${ip}`, 5, 15 * 60_000)
-  if (!rl.allowed) {
-    return { error: `Too many login attempts. Try again in ${rl.retryAfter} seconds.` }
+  const rlIp = await rateLimit(`login:${ip}`, 5, 15 * 60_000)
+  if (!rlIp.allowed) {
+    return { error: `Too many login attempts. Try again in ${rlIp.retryAfter} seconds.` }
   }
 
   const parsed = loginSchema.safeParse({
@@ -55,6 +55,12 @@ export async function loginAction(_: ActionState, formData: FormData): Promise<A
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
+  // Account-level throttle — not bypassable via IP spoofing
+  const rlEmail = await rateLimit(`login:email:${parsed.data.email}`, 10, 15 * 60_000)
+  if (!rlEmail.allowed) {
+    return { error: `Too many login attempts. Try again in ${rlEmail.retryAfter} seconds.` }
+  }
+
   const user = await prisma.user.findUnique({ where: { email: parsed.data.email } })
   if (!user) return { error: 'Invalid email or password' }
   if (user.bannedAt) return { error: 'This account has been suspended.' }
@@ -62,6 +68,7 @@ export async function loginAction(_: ActionState, formData: FormData): Promise<A
     return { error: 'This account uses social login. Please sign in with Google or GitHub.' }
   }
   if (!(await bcrypt.compare(parsed.data.password, user.password))) {
+    console.warn('[security] login failed: bad password', { email: parsed.data.email, ip })
     return { error: 'Invalid email or password' }
   }
 
@@ -72,7 +79,7 @@ export async function loginAction(_: ActionState, formData: FormData): Promise<A
 
 export async function registerAction(_: ActionState, formData: FormData): Promise<ActionState> {
   const ip = await getActionIp()
-  const rl = rateLimit(`register:${ip}`, 10, 60 * 60_000)
+  const rl = await rateLimit(`register:${ip}`, 10, 60 * 60_000)
   if (!rl.allowed) {
     return { error: `Too many registration attempts. Try again in ${rl.retryAfter} seconds.` }
   }
@@ -117,7 +124,7 @@ type ForgotState = { error: string } | { sent: true } | null
 
 export async function forgotPasswordAction(_: ForgotState, formData: FormData): Promise<ForgotState> {
   const ip = await getActionIp()
-  const rl = rateLimit(`forgot:${ip}`, 3, 60 * 60_000)
+  const rl = await rateLimit(`forgot:${ip}`, 3, 60 * 60_000)
   if (!rl.allowed) {
     return { error: `Too many attempts. Try again in ${rl.retryAfter} seconds.` }
   }

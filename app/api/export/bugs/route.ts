@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
+function csvCell(v: string | null): string {
+  let s = v ?? ''
+  // Neutralize spreadsheet formula triggers (Excel/Sheets/LibreOffice)
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s
+  return `"${s.replace(/"/g, '""')}"`
+}
+
 function toCSV(rows: string[][]): string {
-  return rows.map((r) => r.map((v) => `"${(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')
+  return rows.map((r) => r.map((v) => csvCell(v)).join(',')).join('\n')
 }
 
 export async function GET(req: NextRequest) {
