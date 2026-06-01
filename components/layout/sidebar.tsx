@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, AppWindow, List, LogOut,
   MessageSquare, UserPlus, Users, Settings2, CreditCard, ShieldCheck, Loader2,
-  Menu, X,
+  Menu, X, ChevronUp, User,
 } from 'lucide-react'
 import { LogoIcon } from '@/components/logo'
 import { logoutAction } from '@/app/actions/auth'
@@ -15,12 +15,12 @@ import { InviteModal } from './invite-modal'
 import { useLanguage } from '@/components/language-provider'
 
 const navItems = [
-  { href: '/dashboard',              labelKey: 'nav.dashboard',    icon: LayoutDashboard, exact: true },
-  { href: '/dashboard/applications', labelKey: 'nav.applications', icon: AppWindow },
-  { href: '/dashboard/bugs',         labelKey: 'nav.bugs',         icon: List },
-  { href: '/dashboard/feedback',     labelKey: 'nav.feedback',     icon: MessageSquare },
-  { href: '/dashboard/members',      labelKey: 'nav.members',      icon: Users },
-  { href: '/dashboard/billing',      labelKey: 'nav.billing',      icon: CreditCard },
+  { href: '/dashboard',              labelKey: 'nav.dashboard',    icon: LayoutDashboard, exact: true, tourId: 'nav-dashboard' },
+  { href: '/dashboard/applications', labelKey: 'nav.applications', icon: AppWindow,                   tourId: 'nav-applications' },
+  { href: '/dashboard/bugs',         labelKey: 'nav.bugs',         icon: List,                        tourId: 'nav-bugs' },
+  { href: '/dashboard/feedback',     labelKey: 'nav.feedback',     icon: MessageSquare,               tourId: 'nav-feedback' },
+  { href: '/dashboard/members',      labelKey: 'nav.members',      icon: Users,                       tourId: 'nav-members' },
+  { href: '/dashboard/billing',      labelKey: 'nav.billing',      icon: CreditCard,                  tourId: 'nav-billing' },
 ]
 
 interface SidebarProps {
@@ -36,15 +36,28 @@ export function Sidebar({ userName, avatarUrl, ownedApps, isAdmin }: SidebarProp
   const [inviteOpen, setInviteOpen] = useState(false)
   const [pendingHref, setPendingHref] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const profileRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setPendingHref(null)
+    setProfileOpen(false)
   }, [pathname])
 
-  // Close drawer on route change
   useEffect(() => {
     setMobileOpen(false)
   }, [pathname])
+
+  useEffect(() => {
+    if (!profileOpen) return
+    function handleClickOutside(e: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [profileOpen])
 
   function handleNav(href: string) {
     if (href !== pathname) setPendingHref(href)
@@ -102,7 +115,7 @@ export function Sidebar({ userName, avatarUrl, ownedApps, isAdmin }: SidebarProp
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-          {navItems.map(({ href, labelKey, icon: Icon, exact }) => {
+          {navItems.map(({ href, labelKey, icon: Icon, exact, tourId }) => {
             const active = exact ? pathname === href : pathname.startsWith(href)
             const loading = pendingHref === href
             return (
@@ -111,6 +124,7 @@ export function Sidebar({ userName, avatarUrl, ownedApps, isAdmin }: SidebarProp
                 href={href}
                 onClick={() => handleNav(href)}
                 aria-disabled={isNavigating && !loading}
+                data-tour={tourId}
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                   active
@@ -165,11 +179,12 @@ export function Sidebar({ userName, avatarUrl, ownedApps, isAdmin }: SidebarProp
           </div>
         )}
 
-        {/* Settings + User */}
+        {/* Settings + Profile dropdown */}
         <div className={cn('p-3 space-y-1', ownedApps.length === 0 && !isAdmin ? 'border-t border-zinc-800' : '')}>
           <Link
             href="/dashboard/settings"
             onClick={() => handleNav('/dashboard/settings')}
+            data-tour="nav-settings"
             className={cn(
               'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
               pathname.startsWith('/dashboard/settings')
@@ -182,41 +197,66 @@ export function Sidebar({ userName, avatarUrl, ownedApps, isAdmin }: SidebarProp
               : <Settings2 className="h-4 w-4 shrink-0" />}
             {t('nav.settings')}
           </Link>
-          <Link
-            href="/dashboard/profile"
-            onClick={() => handleNav('/dashboard/profile')}
-            className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-              pathname.startsWith('/dashboard/profile')
-                ? 'bg-indigo-600/20 text-indigo-400'
-                : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100',
-            )}
-          >
-            {pendingHref === '/dashboard/profile' ? (
-              <Loader2 className="h-6 w-6 shrink-0 animate-spin text-indigo-400" />
-            ) : (
-              <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full border border-zinc-600">
-                {avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={avatarUrl} alt={userName} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-indigo-600/20 text-[10px] font-bold text-indigo-400">
-                    {userName.charAt(0).toUpperCase()}
-                  </div>
+
+          {/* Profile button with dropdown */}
+          <div className="relative" ref={profileRef}>
+            <button
+              type="button"
+              data-tour="nav-profile"
+              onClick={() => setProfileOpen(o => !o)}
+              className={cn(
+                'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                pathname.startsWith('/dashboard/profile')
+                  ? 'bg-indigo-600/20 text-indigo-400'
+                  : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100',
+              )}
+            >
+              {pendingHref === '/dashboard/profile' ? (
+                <Loader2 className="h-6 w-6 shrink-0 animate-spin text-indigo-400" />
+              ) : (
+                <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full border border-zinc-600">
+                  {avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={avatarUrl} alt={userName} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-indigo-600/20 text-[10px] font-bold text-indigo-400">
+                      {userName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+              )}
+              <span className="flex-1 truncate text-left">{userName}</span>
+              <ChevronUp
+                className={cn(
+                  'h-3.5 w-3.5 shrink-0 transition-transform duration-200',
+                  !profileOpen && 'rotate-180',
                 )}
+              />
+            </button>
+
+            {/* Dropdown */}
+            {profileOpen && (
+              <div className="absolute bottom-full left-0 right-0 mb-1 overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
+                <Link
+                  href="/dashboard/profile"
+                  onClick={() => { handleNav('/dashboard/profile'); setProfileOpen(false) }}
+                  className="flex items-center gap-3 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+                >
+                  <User className="h-4 w-4 shrink-0" />
+                  {t('nav.profile')}
+                </Link>
+                <form action={logoutAction}>
+                  <button
+                    type="submit"
+                    className="flex w-full items-center gap-3 px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+                  >
+                    <LogOut className="h-4 w-4 shrink-0" />
+                    {t('nav.signOut')}
+                  </button>
+                </form>
               </div>
             )}
-            <span className="truncate">{userName}</span>
-          </Link>
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
-            >
-              <LogOut className="h-4 w-4 shrink-0" />
-              {t('nav.signOut')}
-            </button>
-          </form>
+          </div>
         </div>
       </aside>
 

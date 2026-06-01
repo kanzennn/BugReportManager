@@ -4,6 +4,7 @@ import { withCache } from '@/lib/cache'
 import { Sidebar } from '@/components/layout/sidebar'
 import { Heartbeat } from '@/components/layout/heartbeat'
 import { LanguageProvider } from '@/components/language-provider'
+import { TourOverlay } from '@/components/tour/tour-overlay'
 import { getLocale } from '@/lib/locale'
 import type { Locale } from '@/lib/i18n'
 
@@ -14,7 +15,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     withCache(`user:${userId}:profile`, 120, () =>
       prisma.user.findUnique({
         where: { id: userId },
-        select: { name: true, email: true, avatarUrl: true, isAdmin: true, locale: true },
+        select: { name: true, email: true, avatarUrl: true, isAdmin: true, locale: true, tourCompletedAt: true },
       })
     ),
     withCache(`user:${userId}:apps`, 60, () =>
@@ -42,6 +43,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           ownedApps={ownedApps}
           isAdmin={user?.isAdmin ?? false}
         />
+        <TourOverlay tourCompleted={!!user?.tourCompletedAt} />
         <div className="flex-1 pl-0 md:pl-60 print:pl-0">
           <main className="p-4 pt-[72px] md:p-8 md:pt-8">{children}</main>
         </div>

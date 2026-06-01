@@ -3,7 +3,7 @@
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
-import { useTheme } from 'next-themes'
+import { useTheme } from '@/components/theme-provider'
 
 interface ChartEntry {
   date: string

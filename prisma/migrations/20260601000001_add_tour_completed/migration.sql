@@ -1,0 +1,1 @@
+ALTER TABLE `User` ADD COLUMN `tourCompletedAt` DATETIME(3) NULL;

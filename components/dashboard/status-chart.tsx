@@ -1,7 +1,7 @@
 'use client'
 
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { useTheme } from 'next-themes'
+import { useTheme } from '@/components/theme-provider'
 
 interface StatusEntry {
   name: string
