@@ -6,7 +6,7 @@ import { rateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
 const feedbackSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255),
-  message: z.string().min(1, 'Message is required'),
+  message: z.string().min(1, 'Message is required').max(10_000),
   type: z.nativeEnum(FeedbackType).optional().default('GENERAL'),
   rating: z.number().int().min(1).max(5).optional(),
   appVersion: z.string().max(50).optional(),

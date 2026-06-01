@@ -15,7 +15,12 @@ type MidtransNotification = {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json() as MidtransNotification
+  let body: MidtransNotification
+  try {
+    body = await req.json() as MidtransNotification
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
 
   const isValid = verifyWebhookSignature(
     body.order_id,

@@ -2,6 +2,15 @@ import nodemailer from 'nodemailer'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
 
+function esc(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function isConfigured(): boolean {
   return !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
 }
@@ -49,20 +58,20 @@ export async function sendInvitationEmail({
         <tr>
           <td style="padding:32px;">
             <h2 style="margin:0 0 8px;font-size:18px;font-weight:600;color:#f4f4f5;">
-              You've been invited to <span style="color:#818cf8;">${appName}</span>
+              You've been invited to <span style="color:#818cf8;">${esc(appName)}</span>
             </h2>
             <p style="margin:0 0 24px;font-size:14px;color:#a1a1aa;">
-              <strong style="color:#d4d4d8;">${inviterName}</strong> has invited you to collaborate on
-              <strong style="color:#d4d4d8;">${appName}</strong> as a <strong style="color:#d4d4d8;">${roleLabel}</strong>.
+              <strong style="color:#d4d4d8;">${esc(inviterName)}</strong> has invited you to collaborate on
+              <strong style="color:#d4d4d8;">${esc(appName)}</strong> as a <strong style="color:#d4d4d8;">${esc(roleLabel)}</strong>.
             </p>
             <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
               <tr>
                 <td style="background:#27272a;border-radius:6px;padding:8px 12px;font-size:13px;color:#a1a1aa;">
-                  Role: <strong style="color:#818cf8;">${roleLabel}</strong>
+                  Role: <strong style="color:#818cf8;">${esc(roleLabel)}</strong>
                 </td>
               </tr>
             </table>
-            <a href="${invitationLink}"
+            <a href="${esc(invitationLink)}"
                style="display:inline-block;background:#4f46e5;color:#fff;font-size:14px;font-weight:600;padding:12px 24px;border-radius:8px;text-decoration:none;">
               Accept Invitation →
             </a>
@@ -70,7 +79,7 @@ export async function sendInvitationEmail({
               This invitation expires in 7 days. If you did not expect this email, you can safely ignore it.
             </p>
             <p style="margin:8px 0 0;font-size:12px;color:#3f3f46;word-break:break-all;">
-              ${invitationLink}
+              ${esc(invitationLink)}
             </p>
           </td>
         </tr>
@@ -180,16 +189,16 @@ export async function sendBugStatusEmail({
         <tr><td style="padding:32px;">
           <h2 style="margin:0 0 8px;font-size:18px;font-weight:600;color:#f4f4f5;">Bug report status updated</h2>
           <p style="margin:0 0 16px;font-size:14px;color:#a1a1aa;">
-            Your bug report <strong style="color:#d4d4d8;">"${bugTitle}"</strong> has been updated.
+            Your bug report <strong style="color:#d4d4d8;">"${esc(bugTitle)}"</strong> has been updated.
           </p>
           <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
             <tr>
               <td style="background:#27272a;border-radius:6px;padding:8px 12px;font-size:13px;color:#a1a1aa;">
-                New status: <strong style="color:${color};">${label}</strong>
+                New status: <strong style="color:${esc(color)};">${esc(label)}</strong>
               </td>
             </tr>
           </table>
-          <a href="${bugLink}"
+          <a href="${esc(bugLink)}"
              style="display:inline-block;background:#4f46e5;color:#fff;font-size:14px;font-weight:600;padding:12px 24px;border-radius:8px;text-decoration:none;">
             View bug report →
           </a>

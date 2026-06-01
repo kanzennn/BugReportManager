@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-
-function toCSV(rows: string[][]): string {
-  return rows.map((r) => r.map((v) => `"${(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')
-}
+import { toCSV } from '@/lib/csv'
 
 export async function GET(req: NextRequest) {
   const { userId } = await requireAuth()
