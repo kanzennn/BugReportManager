@@ -11,8 +11,14 @@ export async function POST(req: NextRequest) {
   const rl = await rateLimit(`checkout:${session.userId}`, 10, 60 * 60_000)
   if (!rl.allowed) return rateLimitResponse(rl.retryAfter)
 
-  const { plan } = await req.json() as { plan: 'PRO' | 'BUSINESS' }
-  if (!PLANS[plan]) return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
+  let body: { plan?: unknown }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+  const plan = body.plan as keyof typeof PLANS
+  if (!plan || !PLANS[plan]) return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
 
   const user = await prisma.user.findUnique({ where: { id: session.userId } })
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })

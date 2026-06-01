@@ -1,20 +1,19 @@
 import { NextResponse } from 'next/server'
-import { getSession } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { Plan, SubscriptionStatus } from '@prisma/client'
 
 export async function POST() {
-  const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId } = await requireAuth()
 
-  const user = await prisma.user.findUnique({ where: { id: session.userId } })
+  const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
   if (!user.midtransSubscriptionId) {
     return NextResponse.json({ error: 'No active subscription' }, { status: 400 })
   }
 
   await prisma.user.update({
-    where: { id: user.id },
+    where: { id: userId },
     data: {
       plan: Plan.FREE,
       subscriptionStatus: SubscriptionStatus.CANCELLED,
