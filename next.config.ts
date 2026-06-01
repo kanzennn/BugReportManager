@@ -1,8 +1,12 @@
 import type { NextConfig } from 'next'
 
+const isProd = process.env.NODE_ENV === 'production'
+
+// React + Turbopack require 'unsafe-eval' in development for stack-trace reconstruction.
+// Never allow it in production.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://app.midtrans.com https://app.sandbox.midtrans.com",
+  `script-src 'self' 'unsafe-inline'${isProd ? '' : " 'unsafe-eval'"} https://app.midtrans.com https://app.sandbox.midtrans.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "connect-src 'self' https://app.midtrans.com https://app.sandbox.midtrans.com",
@@ -15,7 +19,7 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Content-Security-Policy', value: CSP },
-  ...(process.env.NODE_ENV === 'production'
+  ...(isProd
     ? [{ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' }]
     : []),
 ]
